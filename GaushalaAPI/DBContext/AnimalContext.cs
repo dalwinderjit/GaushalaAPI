@@ -1,127 +1,849 @@
 ﻿using GaushalaAPI.Models;
-using GaushalAPI.Entities;
 using GaushalAPI.Models;
+using GaushalAPI.Entities;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using GaushalaAPI.Helpers;
 
 namespace GaushalaAPI.DBContext
 {
-    public class CowsContext : AnimalContext
+    public class AnimalContext 
     {
-        //private readonly IConfiguration _configuration;
-        public CowsContext(IConfiguration configuration) :base(configuration)
+        protected readonly IConfiguration _configuration;
+        private SqlConnection conn;
+        public AnimalContext(IConfiguration configuration)
         {
-            //base._configuration = configuration;
+            _configuration = configuration;
         }
-        public IEnumerable<Dictionary<string,object>> GetCows(CowFilterModel cowFilter)
-        {
-            int length = 10;
-            int start = 0;
-            string tagNo = null;
-            string name = null;
-            if (cowFilter != null)
+        /*public List<Dictionary<string,object>> GetAnimalsIDNameTagNoPair(AnimalFilter animalFilter){
+            SqlDataReader sqlrdr = this.GetAnimals(animalFilter);
+            List<Dictionary<string,object>> AnimalsList_ = new List<Dictionary<string,object>>();
+            int counter = animalFilter.GetStart();
+            while (sqlrdr.Read())
             {
-                try{
-                    length = (int)cowFilter.length;
-                    start = (int)cowFilter.start;
-                }catch(Exception e)
-                {
-
-                }
-                CowModel cow_ = cowFilter.cow;
-                if (cow_.Name != null && cow_.Name.Trim() != "")
-                {
-                    name = "%" + cow_.Name + "%";
-                }
-                if (cow_.TagNo != null && cow_.TagNo.Trim() != "")
-                {
-                    tagNo = "%" + cow_.TagNo + "%";
-                }
+                Console.WriteLine("HELLO");
+                Dictionary<string, object> animal = new Dictionary<string, object>();
+                
+                animal["id"] = sqlrdr["Id"];
+                animal["tagNoName"] = sqlrdr["TagNo"].ToString() + " - "+sqlrdr["Name"].ToString();
+                //animal["name"] = sqlrdr["Name"].ToString();
+                //animal["dob"] = Helper.FormatDate(sqlrdr["DOB"]) ;
+                //animal["breed"] = sqlrdr["Breed"].ToString();
+                //animal["weight"] = sqlrdr["Weight"].ToString();
+                //animal["colour"] = sqlrdr["Colour"].ToString();
+                AnimalsList_.Add(animal);
+                counter++;
             }
-            //List<CowModel> cowsList = new List<CowModel>();
-            List<Dictionary<string,object>> cowsList_ = new List<Dictionary<string,object>>();
+            sqlrdr.Close();
+            conn.Close();
+            return AnimalsList_;
+        }*/
+        public Dictionary<long,object> GetAnimalsIDNameTagNoPair(AnimalFilter animalFilter)
+        {
+            Dictionary<long,object> AnimalsList_ = new Dictionary<long,object>();
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (conn = new SqlConnection(connectionString))
             {
-                string where = "";
-                if (name != null)
-                {
-                    where = $" and Name like @Name ";
-                }
-                if (tagNo != null)
-                {
-                    where += $" and  TagNo like @TagNo";
-                }
-                string query = $"Select * from Animals where Category = 'COW' {where} order by TagNo  OFFSET {start} ROWS FETCH NEXT {length} ROWS ONLY";
+                string query = this.GetQuery(animalFilter);
                 Console.Write(query);
-                SqlCommand sqlcmd = new SqlCommand(query, conn);
-                //SqlCommand sqlcmd = new SqlCommand("Update [dbo].[Animals] set [TagNo] = @tagNo,[Name] = @name,[Category] = @Category where [Animals].[Id] = @ID", conn);
-                if (name != null)
-                {
-                    sqlcmd.Parameters.Add("@Name", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Name"].Value = name;
-                }
-                if (tagNo != null)
-                {
-                    sqlcmd.Parameters.Add("@TagNo", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@TagNo"].Value = tagNo;
-                }
-                //SqlCommand sqlcmd = new SqlCommand($"Select  * from Animals where Category = 'COW' order by TagNo  OFFSET {start} ROWS FETCH NEXT {length} ROWS ONLY", conn);
+                SqlCommand sqlcmd = this.SetParameters(query,animalFilter);
                 try
                 {
-                    //Console.WriteLine("HI");
                     conn.Open();
                     SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
-                    int counter = start;
                     while (sqlrdr.Read())
                     {
-                        Dictionary<string, object> bull = new Dictionary<string, object>();
-                        bull["id"] = sqlrdr["Id"];
-                        bull["sno"] = counter;
-                        bull["tagNo"] = sqlrdr["TagNo"].ToString();
-                        bull["name"] = sqlrdr["Name"].ToString();
-                        bull["dob"] = Helper.FormatDate(sqlrdr["DOB"]) ;
-                        bull["breed"] = sqlrdr["Breed"].ToString();
-                        bull["weight"] = sqlrdr["Weight"].ToString();
-                        //bull["colour"] = sqlrdr["Colour"].ToString();
-                        bull["colour"] = sqlrdr["Colour"].ToString();
-                        /*m1.MilkingPK = Convert.ToInt64(sqlrdr["MilkingPK"]);
-                        m1.CowNo = sqlrdr["CowNo"].ToString();
-                        m1.Date = Convert.ToDateTime(sqlrdr["Date"]);
-                        m1.MorningValue = Convert.ToDecimal(sqlrdr["MorningValue"]);
-                        m1.EveningValue = Convert.ToDecimal(sqlrdr["EveningValue"]);
-                        m1.CalfValue = Convert.ToDecimal(sqlrdr["CalfValue"]);
-                        m1.Total = Convert.ToDecimal(sqlrdr["Total"]);
-                        m1.Breed = Convert.ToString(sqlrdr["Breed"]);
-                        m1.Remarks = Convert.ToString(sqlrdr["Remarks"]);
-                        m1.Lactation = Convert.ToString(sqlrdr["Lactation"]);*/
-
-                        //cowsList.Add(BullModel);
-                        cowsList_.Add(bull);
-                        counter++;
+                        //Console.WriteLine("HELLO");
+                        AnimalsList_[Convert.ToInt64(sqlrdr["Id"])] = sqlrdr["TagNo"].ToString()+" - "+ (sqlrdr["Name"].ToString());
+                        if(animalFilter.GetCategory==true){
+                            AnimalsList_[Convert.ToInt64(sqlrdr["Id"])] +="("+sqlrdr["Category"].ToString()+")";
+                        }
                     }
                     sqlrdr.Close();
                     conn.Close();
-                    return cowsList_;
+                    return AnimalsList_;
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.ToString());
-                    return cowsList_;
+                    Console.WriteLine(ex.StackTrace);
+                    return AnimalsList_;
                 }
-                
             }
+        }
+        public List<Dictionary<string,object>> GetAnimals(AnimalFilter animalFilter)
+        {
+            List<Dictionary<string,object>> AnimalsList_ = new List<Dictionary<string,object>>();
+            string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+            using (conn = new SqlConnection(connectionString))
+            {
+                Console.WriteLine("HIE");
+                string where = "";
+                if (animalFilter.Name != null && animalFilter.Name !="")
+                {
+                    if(where!=""){ where+=" and "; }
+                    where = $" Name like @Name ";
+                }
+                if (animalFilter.TagNo != null && animalFilter.TagNo !="")
+                {
+                    if(where!=""){ where+=" and "; }
+                    where += $" TagNo like @TagNo";
+                }
+                if (animalFilter.Category != null && animalFilter.Category !="")
+                {
+                    if(where!=""){ where+=" and "; }
+                    where += $" Category like @Category";
+                }
+                string orderBy = "";
+                if (animalFilter.OrderBy != null && animalFilter.OrderBy !="" && animalFilter.Order != null && animalFilter.Order !="")
+                {
+                    orderBy += $" order by TagNo ASC ";
+                }
+                string offset = "";
+                if (animalFilter.PageNo != null &&  animalFilter.RecordsPerPage != null)
+                {
+                    offset += $" OFFSET @Start ROWS FETCH NEXT @Length ROWS ONLY";
+                }
+                string query = $"Select * from Animals where {where} {orderBy}  {offset}";
+                Console.Write(query);
+                SqlCommand sqlcmd = new SqlCommand(query, conn);
+                //SqlCommand sqlcmd = new SqlCommand("Update [dbo].[Animals] set [TagNo] = @tagNo,[Name] = @name,[Category] = @Category where [Animals].[Id] = @ID", conn);
+                if (animalFilter.Name != null && animalFilter.Name != "")
+                {
+                    sqlcmd.Parameters.Add("@Name", System.Data.SqlDbType.VarChar);
+                    sqlcmd.Parameters["@Name"].Value = animalFilter.Name;
+                }
+                if (animalFilter.TagNo != null && animalFilter.TagNo != "")
+                {
+                    sqlcmd.Parameters.Add("@TagNo", System.Data.SqlDbType.VarChar);
+                    sqlcmd.Parameters["@TagNo"].Value = animalFilter.TagNo;
+                }
+                if (animalFilter.Category != null && animalFilter.Category != "")
+                {
+                    sqlcmd.Parameters.Add("@Category", System.Data.SqlDbType.VarChar);
+                    sqlcmd.Parameters["@Category"].Value = animalFilter.Category;
+                    Console.WriteLine("Category " + animalFilter.Category);
+                }
+                if (animalFilter.OrderBy != null && animalFilter.OrderBy !="" && animalFilter.Order != null && animalFilter.Order !="")
+                {
+                    sqlcmd.Parameters.Add("@OrderBy", System.Data.SqlDbType.VarChar);
+                    sqlcmd.Parameters["@OrderBy"].Value = animalFilter.OrderBy;
+                    sqlcmd.Parameters.Add("@Order", System.Data.SqlDbType.VarChar);
+                    sqlcmd.Parameters["@Order"].Value = animalFilter.Order;
+                    Console.WriteLine("ORder by " + animalFilter.OrderBy);
+                    Console.WriteLine("ORder " + animalFilter.Order);
+                }
+                if (animalFilter.PageNo != null &&  animalFilter.RecordsPerPage != null)
+                {
+                    animalFilter.CalculateStartLength();
+                    sqlcmd.Parameters.Add("@Start", System.Data.SqlDbType.Int);
+                    sqlcmd.Parameters["@Start"].Value = animalFilter.Start;
+                    sqlcmd.Parameters.Add("@Length", System.Data.SqlDbType.Int);
+                    sqlcmd.Parameters["@Length"].Value = animalFilter.Length;
+                }
+                Console.WriteLine("TagNo  "+ animalFilter.TagNo);
+                Console.WriteLine("Start  "+ animalFilter.Start);
+                Console.WriteLine("Length "+ animalFilter.Length);
+                try
+                {
+                    conn.Open();
+                    SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
+                    //Console.WriteLine("HIE LKJLK");
+                    //return sqlrdr;
+                    int counter = animalFilter.GetStart();
+                    while (sqlrdr.Read())
+                    {
+                        //Console.WriteLine("HELLO");
+                        Dictionary<string, object> animal = new Dictionary<string, object>();
+                        animal["sno"] = counter;
+                        animal["id"] = sqlrdr["Id"];
+                        animal["tagNo"] = sqlrdr["TagNo"].ToString();
+                        animal["name"] = sqlrdr["Name"].ToString();
+                        animal["dob"] = Helper.FormatDate(sqlrdr["DOB"]) ;
+                        animal["breed"] = sqlrdr["Breed"].ToString();
+                        animal["weight"] = sqlrdr["Weight"].ToString();
+                        animal["colour"] = sqlrdr["Colour"].ToString();
+                        AnimalsList_.Add(animal);
+                        counter++;
+                    }
+                    //sqlrdr.Close();
+                    //conn.Close();
+                    //return sqlrdr;
+                    return AnimalsList_;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    Console.WriteLine(ex.StackTrace);
+                    //return null;
+                    return AnimalsList_;
+                }
+            }
+        }
+        public string GetQuery(AnimalFilter animalFilter){
+            string where = "";
+            if (animalFilter.Name != null && animalFilter.Name !="")
+            {
+                if(where!=""){ where+=" and "; }
+                where = $" Name like @Name ";
+            }
+            if (animalFilter.TagNo != null && animalFilter.TagNo !="")
+            {
+                if(where!=""){ where+=" and "; }
+                where += $" TagNo like @TagNo";
+            }
+            if (animalFilter.Category != null && animalFilter.Category !="")
+            {
+                if(where!=""){ where+=" and "; }
+                where += $" Category like @Category";
+            }
+            string orderBy = "";
+            if (animalFilter.OrderBy != null && animalFilter.OrderBy !="" && animalFilter.Order != null && animalFilter.Order !="")
+            {
+                orderBy += $" order by TagNo ASC ";
+            }
+            string offset = "";
+            if (animalFilter.PageNo != null &&  animalFilter.RecordsPerPage != null)
+            {
+                offset += $" OFFSET @Start ROWS FETCH NEXT @Length ROWS ONLY";
+            }
+            string query = $"Select * from Animals where {where} {orderBy}  {offset}";
+            Console.Write(query);
+            return query;
+        }
+        public SqlCommand SetParameters(String query,AnimalFilter animalFilter){
+            SqlCommand sqlcmd = new SqlCommand(query, conn);
+            if (animalFilter.Name != null && animalFilter.Name != "")
+            {
+                sqlcmd.Parameters.Add("@Name", System.Data.SqlDbType.VarChar);
+                sqlcmd.Parameters["@Name"].Value = animalFilter.Name;
+            }
+            if (animalFilter.TagNo != null && animalFilter.TagNo != "")
+            {
+                sqlcmd.Parameters.Add("@TagNo", System.Data.SqlDbType.VarChar);
+                sqlcmd.Parameters["@TagNo"].Value = animalFilter.TagNo;
+            }
+            if (animalFilter.Category != null && animalFilter.Category != "")
+            {
+                sqlcmd.Parameters.Add("@Category", System.Data.SqlDbType.VarChar);
+                sqlcmd.Parameters["@Category"].Value = animalFilter.Category;
+                Console.WriteLine("Category " + animalFilter.Category);
+            }
+            if (animalFilter.OrderBy != null && animalFilter.OrderBy !="" && animalFilter.Order != null && animalFilter.Order !="")
+            {
+                sqlcmd.Parameters.Add("@OrderBy", System.Data.SqlDbType.VarChar);
+                sqlcmd.Parameters["@OrderBy"].Value = animalFilter.OrderBy;
+                sqlcmd.Parameters.Add("@Order", System.Data.SqlDbType.VarChar);
+                sqlcmd.Parameters["@Order"].Value = animalFilter.Order;
+                Console.WriteLine("ORder by " + animalFilter.OrderBy);
+                Console.WriteLine("ORder " + animalFilter.Order);
+            }
+            if (animalFilter.PageNo != null &&  animalFilter.RecordsPerPage != null)
+            {
+                animalFilter.CalculateStartLength();
+                sqlcmd.Parameters.Add("@Start", System.Data.SqlDbType.Int);
+                sqlcmd.Parameters["@Start"].Value = animalFilter.Start;
+                sqlcmd.Parameters.Add("@Length", System.Data.SqlDbType.Int);
+                sqlcmd.Parameters["@Length"].Value = animalFilter.Length;
+            }
+            Console.WriteLine("TagNo  "+ animalFilter.TagNo);
+            Console.WriteLine("Start  "+ animalFilter.Start);
+            Console.WriteLine("Length "+ animalFilter.Length);
+            return sqlcmd;
+        }
+        public string GenerateInsertAnimalSqlQuery(AnimalModel ani){
+            string addQuery = "";
+            switch(ani.Category.ToUpper()){
+                case "HEIFER":
+                    string cols = "";// "[Gender],[TagNo],[Name],[Breed],[Lactation],[DOB],[Colour],[Weight],[Height],[BirthLactationNumber],[PregnancyStatus],[Status],[ReproductiveStatus],[MilkingStatus],[Location]";
+                    string params_ = "";// "@Gender,@tagNo,@name,@breed,0,@dob,@colour,@weight,@height,@BirthLactationNumber,@PregnancyStatus,@Status,@ReproductiveStatus,@MilkingStatus,@Location";
+                        
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.MilkingStatus), ref cols, ref params_, "MilkingStatus");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Location), ref cols, ref params_, "Location");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.ReproductiveStatus), ref cols, ref params_, "ReproductiveStatus");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Status), ref cols, ref params_, "Status");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.PregnancyStatus), ref cols, ref params_, "PregnancyStatus");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.BirthLactationNumber), ref cols, ref params_, "BirthLactationNumber");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Height), ref cols, ref params_, "Height");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Weight), ref cols, ref params_, "Weight");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Colour), ref cols, ref params_, "Colour");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.DOB), ref cols, ref params_, "DOB");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Lactation), ref cols, ref params_, "Lactation");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Name), ref cols, ref params_, "Name");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Breed), ref cols, ref params_, "Breed");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.TagNo), ref cols, ref params_, "TagNo");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Gender), ref cols, ref params_, "Gender");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Picture), ref cols, ref params_, "Picture");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Remarks), ref cols, ref params_, "Remarks");
+                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Category), ref cols, ref params_,"Category");
+                    
+                    if (ani.DamID != null)
+                    {
+                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.DamID), ref cols, ref params_, "DamID");
+                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.DBLY), ref cols, ref params_, "DBLY");
+                    }
+                    else
+                    {
+                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.DamName), ref cols, ref params_, "DamName");
+                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.DamNo), ref cols, ref params_, "DamNo");
+                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.DBLY), ref cols, ref params_, "DBLY");
+                    }
+                    if (ani.SireID != null)
+                    {
+                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.SireID), ref cols, ref params_, "SireID");
+                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.SDBLY), ref cols, ref params_, "SDBLY");
+                    }
+                    else
+                    {
+                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.SireName), ref cols, ref params_, "SireName");
+                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.SireNo), ref cols, ref params_, "SireNo");
+                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.SDBLY), ref cols, ref params_, "SDBLY");
+                    }
+                    //string query = $"INSERT into [dbo].[Animals] ({cols}) OUTPUT INSERTED.ID values({params_});";
+                    addQuery = $"INSERT into [dbo].[Animals] ({cols}) OUTPUT INSERTED.ID values({params_});";
+                   //Console.WriteLine(addQuery);
+                    return addQuery;
+                    break;
+                case "CALF":
+                    break;
+                case "COW":
+                    break;
+                case "BULL":
+                    break;
+            }
+            return addQuery;
+        }
+        public void addColToQuery(bool add,ref string cols,ref string params_,string colName)
+        {
+            if (add==true)
+            {
+                if (cols.Trim() != "")
+                {
+                    cols += ",";
+                }
+                cols += $"[{colName}]";
+                if (params_.Trim() != "")
+                {
+                    params_ += ",";
+                }
+                params_ += $"@{colName}";
+            }
+        }
+        public SqlCommand SetSqlCommandParameter(SqlCommand sqlcmd, AnimalModel ani){
+            switch(ani.Category.ToUpper()){
+                case "HEIFER":
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Name), ani.Name, "Name", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.TagNo), ani.TagNo, "TagNo", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Breed), ani.Breed, "Breed", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Category), ani.Category, "Category", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Lactation), ani.Lactation, "Lactation", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DOB), ani.DOB, "DOB", System.Data.SqlDbType.DateTime);
+                    if (ani.DamID != null)
+                    {
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DamID), ani.DamID, "DamID", System.Data.SqlDbType.Int);
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DBLY), ani.DBLY, "DBLY", System.Data.SqlDbType.VarChar);
+                    }
+                    else
+                    {
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DamName), ani.DamName, "DamName", System.Data.SqlDbType.VarChar);
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DamNo), ani.DamNo, "DamNo", System.Data.SqlDbType.VarChar);
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DBLY), ani.DBLY, "DBLY", System.Data.SqlDbType.VarChar);
+                    }
+                    if (ani.SireID != null)
+                    {
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.SireID), ani.SireID, "SireID", System.Data.SqlDbType.BigInt);
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.SDBLY), ani.SDBLY, "SDBLY", System.Data.SqlDbType.VarChar);
+                    }
+                    else
+                    {
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.SireName), ani.SireName, "SireName", System.Data.SqlDbType.VarChar);
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.SireNo), ani.SireNo, "SireNo", System.Data.SqlDbType.VarChar);
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.SDBLY), ani.SDBLY, "SDBLY", System.Data.SqlDbType.VarChar);
+                    }
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Gender), ani.Gender, "Gender", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Colour), ani.Colour, "Colour", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Weight), ani.Weight, "Weight", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Height), ani.Height, "Height", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.BirthLactationNumber), ani.BirthLactationNumber, "BirthLactationNumber", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Location), ani.Location, "Location", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.PregnancyStatus), ani.PregnancyStatus, "PregnancyStatus", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Status), ani.Status, "Status", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.ReproductiveStatus), ani.ReproductiveStatus, "ReproductiveStatus", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.MilkingStatus), ani.MilkingStatus, "MilkingStatus", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Remarks), ani.Remarks, "Remarks", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Picture), ani.Picture, "Picture", System.Data.SqlDbType.VarChar);
+                    return sqlcmd;
+                    break;
+                case "CALF":
+                    break;
+                case "COW":
+                    break;
+                case "BULL":
+                    break;
+                default:
+                    sqlcmd.Parameters.Add("@tagNo", System.Data.SqlDbType.VarChar);
+                    sqlcmd.Parameters.Add("@name", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Category), ani.Category, "Category", System.Data.SqlDbType.VarChar);
+                    //sqlcmd.Parameters.Add("@Category", System.Data.SqlDbType.VarChar);
+                    //sqlcmd.Parameters["@Category"].Value = ani.Category;
 
+                    sqlcmd.Parameters["@tagNo"].Value = ani.TagNo;
+                    sqlcmd.Parameters["@name"].Value = ani.Name;
+
+                    if (ani.Breed != null || true)
+                    {
+                        sqlcmd.Parameters.Add("@breed", System.Data.SqlDbType.Int);
+                        sqlcmd.Parameters["@breed"].Value = ani.Breed;
+                    }
+                    
+                    if (ani.DOB != null || true)
+                    {
+                        sqlcmd.Parameters.Add("@dob", System.Data.SqlDbType.DateTime);
+                        // sqlcmd.Parameters["@dob"].Value = ((DateTime)ani.DOB).ToString("yyyy-MM-dd 00:00:00");
+                        sqlcmd.Parameters["@dob"].Value = ani.DOB;
+                    }
+                    if (ani.DamID != null || true)
+                    {
+                        sqlcmd.Parameters.Add("@damID", System.Data.SqlDbType.Int);
+                        sqlcmd.Parameters["@damID"].Value = ani.DamID;
+                    }
+                    if (ani.SireID != null || true)
+                    {
+                        sqlcmd.Parameters.Add("@sireID", System.Data.SqlDbType.BigInt);
+                        sqlcmd.Parameters["@sireID"].Value = ani.SireID;
+                    }
+                    if (ani.Gender != null || true)
+                    {
+                        sqlcmd.Parameters.Add("@Gender", System.Data.SqlDbType.VarChar );
+                        sqlcmd.Parameters["@Gender"].Value = ani.Gender;
+                    }
+                    if (ani.Colour != null || true)
+                    {
+                        sqlcmd.Parameters.Add("@colour", System.Data.SqlDbType.Int);
+                        sqlcmd.Parameters["@colour"].Value = ani.Colour;
+                    }
+                    if (ani.Weight != null || true)
+                    {
+                        sqlcmd.Parameters.Add("@weight", System.Data.SqlDbType.Decimal);
+                        sqlcmd.Parameters["@weight"].Value = ani.Weight;
+                    }
+                    if (ani.Height != null || true)
+                    {
+                        sqlcmd.Parameters.Add("@height", System.Data.SqlDbType.Decimal);
+                        sqlcmd.Parameters["@height"].Value = ani.Height;
+                    }
+                    if (ani.Picture != null && ani.Picture != "")
+                    {
+                        sqlcmd.Parameters.Add("@picture", System.Data.SqlDbType.VarChar);
+                        sqlcmd.Parameters["@picture"].Value = ani.Picture;
+                    }
+                    if (ani.BirthLactationNumber!= null )
+                    {
+                        sqlcmd.Parameters.Add("@BirthLactationNumber", System.Data.SqlDbType.Int);
+                        sqlcmd.Parameters["@BirthLactationNumber"].Value = ani.BirthLactationNumber;
+                    }
+                    if (ani.Location!= null )
+                    {
+                        sqlcmd.Parameters.Add("@Location", System.Data.SqlDbType.Int);
+                        sqlcmd.Parameters["@Location"].Value = ani.Location;
+                    }
+                    sqlcmd.Parameters.Add("@PregnancyStatus", System.Data.SqlDbType.Int);
+                    sqlcmd.Parameters["@PregnancyStatus"].Value = 0;
+                    sqlcmd.Parameters.Add("@Status", System.Data.SqlDbType.Int);
+                    sqlcmd.Parameters["@Status"].Value = 1;
+                    sqlcmd.Parameters.Add("@ReproductiveStatus", System.Data.SqlDbType.Int);
+                    sqlcmd.Parameters["@ReproductiveStatus"].Value = 0;
+                    sqlcmd.Parameters.Add("@MilkingStatus", System.Data.SqlDbType.Int);
+                    sqlcmd.Parameters["@MilkingStatus"].Value = 0;
+                    sqlcmd.Parameters.Add("@Remarks", System.Data.SqlDbType.VarChar);
+                    sqlcmd.Parameters["@Remarks"].Value = ani.Remarks;
+                    break;
+                    return sqlcmd;
+            }
+            return sqlcmd;
+        }
+        public void AddColToSqlCommand(ref SqlCommand sqlcmd,bool add,object value, string colName, System.Data.SqlDbType type)
+        {
+            if (add == true)
+            {
+                sqlcmd.Parameters.Add($"@{colName}", type);
+                sqlcmd.Parameters[$"@{colName}"].Value = value;
+            }
+        }
+        internal Dictionary<string,object> AddAnimal(AnimalModel ani,bool addDam, bool addSire,SqlConnection? conn2=null,SqlTransaction? tran=null)
+        {
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            try
+            {
+                string image = null;
+                ani.GenerateImageName(CowsContext.GetMaxAnimalId(this._configuration));
+                //Console.WriteLine("picture " + ani.Picture);
+                Dictionary<string, string> errors = new Dictionary<string, string>();
+                SqlConnection conn;
+                if (conn2 != null)
+                {
+                    conn = conn2;
+                }
+                else
+                {
+                    string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+                    conn = new SqlConnection(connectionString);
+                    conn.Open();
+                }
+                if (addDam == true || addSire == true)
+                {
+                    tran = conn.BeginTransaction("NewAnimal");
+                }
+                Dictionary<string, object> addDamData = new Dictionary<string, object>();
+                Dictionary<string, object> addSireData = new Dictionary<string, object>();
+                if (addDam == true)
+                {
+                    addDamData = this.AddDam(ani,conn,tran);//, conn, tran);
+                    if (Convert.ToBoolean(addDamData["status"]) == true)
+                    {
+                        ani.DamID = Convert.ToInt64(addDamData["DamID"]);
+                    }
+                }
+                if (addSire == true)
+                {
+                    addSireData = this.AddSire(ani,conn,tran);//, conn, tran);
+                    if (Convert.ToBoolean(addSireData["status"]) == true)
+                    {
+                        ani.SireID = Convert.ToInt64(addSireData["SireID"]);
+                    }
+                }
+                String query = this.GenerateInsertAnimalSqlQuery(ani);
+                //Console.WriteLine("Query " +query);
+                SqlCommand sqlcmd = new SqlCommand(query, conn);
+                //Console.WriteLine("HELLO command creted");
+                sqlcmd = this.SetSqlCommandParameter(sqlcmd, ani);
+                //Console.WriteLine("Sql parameter set");
+                try
+                {
+                    if (addDam == true || addSire == true)
+                    {
+                        //Console.WriteLine("Assinging Transaction");
+                        sqlcmd.Transaction = tran;
+                        tran.Save("AddAnimal");
+                        //Console.WriteLine("Tranasactio nassigned");
+                        //Console.WriteLine("Executing query");
+                        ani.Id = (Int64)sqlcmd.ExecuteScalar();
+                        //Console.WriteLine("Executed"+ani.Id);
+                        bool commit = true;
+                        if (addDam == true)
+                        {
+                            if (Convert.ToBoolean(addDamData["status"]) == false)
+                            {
+                                commit = false;
+                            }
+                        }
+                        if (addSire == true)
+                        {
+                            if (Convert.ToBoolean(addSireData["status"]) == false)
+                            {
+                                commit = false;
+                            }
+                        }
+                        //Console.WriteLine("COMMIT" + commit);
+                        if (commit == true)
+                        {
+                            //Console.WriteLine("HELLO HI ");
+                            if (tran != null)
+                            {
+                                //Console.WriteLine("COMMIting");
+                                tran.Commit();
+                                //Console.WriteLine("COMMITED");
+                            }
+                            Dictionary<string, string> data2 = new Dictionary<string, string>();
+                            data2["message"] = $"{ani.Category} Added successfully ID:" + ani.Id;
+                            data2["status"] = "success";
+                            data2["animalID"] = "" + ani.Id;
+                            data["data"] = data2;
+                            data["status"] = true;
+                        }
+                        else
+                        {
+                            if (tran != null)
+                            {
+                                tran.Rollback();
+                            }
+                            Dictionary<string, string> data2 = new Dictionary<string, string>();
+                            data2["message"] = "Animal Save Failed";
+                            data2["status"] = "Failure";
+                            data["data"] = data2;
+                            data["status"] = false;
+                        }
+                        conn.Close();
+                    }
+                    else
+                    {
+                        ani.Id = (Int64)sqlcmd.ExecuteScalar();
+                        Dictionary<string, string> data2 = new Dictionary<string, string>();
+                        data2["message"] = $"{ani.Category} Added successfully ID:" + ani.Id;
+                        data2["status"] = "success";
+                        data2["animalID"] = "" + ani.Id;
+                        data["data"] = data2;
+                        data["status"] = true;
+                        conn.Close();
+                    }
+                    
+                }
+                catch (Exception e)
+                {
+                    //Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
+                    //Console.WriteLine("Savin Failed");
+                    Dictionary<string, string> data2 = new Dictionary<string, string>();
+                    data2["message"] = "Animal Save Failed";
+                    data2["status"] = "Failure";
+                    data["data"] = data2;
+                }
+            }catch(Exception e)
+            {
+                //Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+            }
+            //Console.WriteLine("returning data");
+            return data;
+        }
+        public Dictionary<string, object> AddDam(AnimalModel ani,SqlConnection? conn2=null,SqlTransaction? tran=null)
+        {
+            string Query = $"INSERT into [dbo].[Animals] (TagNo,Name,Category,Gender,BelongsToGaushala) OUTPUT INSERTED.ID values(@TagNo,@Name,@Category,@Gender,@BelongsToGaushala);";
+            string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            SqlConnection conn;
+            if (conn2 != null)
+            {
+                conn = conn2;
+            }
+            else
+            {
+                conn = new SqlConnection(connectionString);
+            }
+            SqlCommand sqlcmd = new SqlCommand(Query, conn);
+            this.AddColToSqlCommand(ref sqlcmd, /*!Validations.IsNullOrEmpty(ani.TagNo)*/true, ani.DamNo, "TagNo", System.Data.SqlDbType.VarChar);
+            this.AddColToSqlCommand(ref sqlcmd, true, ani.DamName, "Name", System.Data.SqlDbType.VarChar);
+            this.AddColToSqlCommand(ref sqlcmd, true, "COW", "Category", System.Data.SqlDbType.VarChar);
+            this.AddColToSqlCommand(ref sqlcmd, true, "FEMALE", "Gender", System.Data.SqlDbType.VarChar);
+            this.AddColToSqlCommand(ref sqlcmd, true, 0, "BelongsToGaushala", System.Data.SqlDbType.Int);
+            try
+            {
+                if (tran == null)
+                {
+                    conn.Open();
+                }
+                else
+                {
+                    sqlcmd.Transaction = tran;
+                    tran.Save("AddDam");
+                }
+                ani.Id = (Int64)sqlcmd.ExecuteScalar();
+                Dictionary<string, string> data2 = new Dictionary<string, string>();
+                //Console.WriteLine("Dam Added Successfully");
+                data2["message"] = $"Dam Added successfully ID:" + ani.Id;
+                data2["status"] = "success";
+                data["data"] = data2;
+                data["status"] = true;
+                data["DamID"] = ani.Id;
+            }
+            catch (Exception e)
+            {
+                //Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+                //Console.WriteLine("Savin Failed");
+                Dictionary<string, string> data2 = new Dictionary<string, string>();
+                data2["message"] = "Dam Save Failed";
+                data2["status"] = "Failure";
+                data["data"] = data2;
+                data["status"] = false;
+            }
+            return data;
+        }
+        public Dictionary<string, object> AddSire(AnimalModel ani, SqlConnection? conn2=null, SqlTransaction? tran=null)
+        {
+            string cols = "";
+            string params_ = "";
+            if (!Validations.IsNullOrEmpty(ani.SDBLY) == true) {
+                cols += "DBLY";
+                params_ += "@DBLY";
+            }
+            string Query = $"INSERT into [dbo].[Animals] (TagNo,Name,Category,Gender,BelongsToGaushala,{cols}) OUTPUT INSERTED.ID values(@TagNo,@Name,@Category,@Gender,@BelongsToGaushala,{params_});";
+            string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            SqlConnection conn;
+            if (conn2 != null)
+            {
+                conn = conn2;
+            }
+            else
+            {
+                conn = new SqlConnection(connectionString);
+                conn.Open();
+            }
+            SqlCommand sqlcmd = new SqlCommand(Query, conn);
+            this.AddColToSqlCommand(ref sqlcmd, /*!Validations.IsNullOrEmpty(ani.TagNo)*/true, ani.SireNo, "TagNo", System.Data.SqlDbType.VarChar);
+            this.AddColToSqlCommand(ref sqlcmd, true, ani.SireName, "Name", System.Data.SqlDbType.VarChar);
+            this.AddColToSqlCommand(ref sqlcmd, true, "BULL", "Category", System.Data.SqlDbType.VarChar);
+            this.AddColToSqlCommand(ref sqlcmd, true, "MALE", "Gender", System.Data.SqlDbType.VarChar);
+            this.AddColToSqlCommand(ref sqlcmd, true, 0, "BelongsToGaushala", System.Data.SqlDbType.Int);
+            this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DBLY) == true ,ani.SDBLY, "DBLY", System.Data.SqlDbType.VarChar);
+            if (!Validations.IsNullOrEmpty(ani.SDBLY) == true)
+            {
+                cols += "SDBLY";
+                params_ += "@SDBLY";
+            }
+            try
+            {
+                if (tran != null)
+                {
+                    sqlcmd.Transaction = tran;
+                    tran.Save("AddSire");
+                }
+                ani.Id = (Int64)sqlcmd.ExecuteScalar();
+                Dictionary<string, string> data2 = new Dictionary<string, string>();
+                //Console.WriteLine("Sire Added Successfully");
+                data2["message"] = $"Sire Added successfully ID:" + ani.Id;
+                data2["status"] = "success";
+                data["data"] = data2;
+                data["status"] = true;
+                data["SireID"] = ani.Id;
+            }
+            catch (Exception e)
+            {
+                //Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+                //Console.WriteLine("Savin Sire Failed");
+                Dictionary<string, string> data2 = new Dictionary<string, string>();
+                data2["message"] = "Sire Adding Failed";
+                data2["status"] = "failure";
+                data["data"] = data2;
+                data["status"] = false;
+            }
+            return data;
         }
 
-        internal int GetTotalFilteredCows(CowFilterModel cowFilters)
+        public bool isTagNoUnique(string tagNo,long? id=null)
         {
-            if (cowFilters != null)
+            if (tagNo != null)
             {
-                CowModel cow_ = cowFilters.cow;
+                string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    //Console.WriteLine("Select count(*) as total from Animals where TagNo = @TagNo");
+                    string query = $"Select count(*) as total from Animals where TagNo = @TagNo";
+                    if (id != null)
+                    {
+                        query += " and ID != @Id";
+                    }
+                    //Console.WriteLine(query);
+                    SqlCommand sqlcmd = new SqlCommand();
+                    sqlcmd.Connection = conn;
+                    sqlcmd.CommandText = query;
+                    try
+                    {
+                        sqlcmd.Parameters.Add("@TagNo", System.Data.SqlDbType.VarChar);
+                        sqlcmd.Parameters["@TagNo"].Value = tagNo.Trim();
+                        if (id != null)
+                        {
+                            sqlcmd.Parameters.Add("@Id", System.Data.SqlDbType.BigInt);
+                            sqlcmd.Parameters["@Id"].Value = id;
+                        }
+                        conn.Open();
+                        SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
+                        if (sqlrdr.Read())
+                        {
+                            int total = Convert.ToInt32(sqlrdr.GetValue(0));
+                            sqlrdr.Close();
+                            conn.Close();
+                            if (total <= 0)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return false;
+                    }
+                }
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public bool IsBirthLactionNumberUnique(int birthLactationNumber,long DamId, int? recordId = null)
+        {
+            if (birthLactationNumber != null && DamId!=null)
+            {
+                string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    //Console.WriteLine("Select count(*) as total from Animals where TagNo = @TagNo");
+                    string query = $"Select count(*) as total from Animals where DamId= @DamId and BirthLactationNumber = @BirthLactationNumber";
+                    if (recordId != null)
+                    {
+                        query += " and Id = @Id";
+                    }
+                    Console.WriteLine(query);
+                    SqlCommand sqlcmd = new SqlCommand();
+                    sqlcmd.Connection = conn;
+                    sqlcmd.CommandText = query;
+                    try
+                    {
+                        sqlcmd.Parameters.Add("@DamId", System.Data.SqlDbType.BigInt);
+                        sqlcmd.Parameters["@DamId"].Value = DamId;
+                        sqlcmd.Parameters.Add("@BirthLactationNumber", System.Data.SqlDbType.Int);
+                        sqlcmd.Parameters["@BirthLactationNumber"].Value = birthLactationNumber;
+
+                        if (recordId != null)
+                        {
+                            sqlcmd.Parameters.Add("@Id", System.Data.SqlDbType.BigInt);
+                            sqlcmd.Parameters["@Id"].Value = recordId;
+                        }
+                        conn.Open();
+                        SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
+                        if (sqlrdr.Read())
+                        {
+                            int total = Convert.ToInt32(sqlrdr.GetValue(0));
+                            sqlrdr.Close();
+                            conn.Close();
+                            if (total <= 0)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return false;
+                    }
+                }
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        /*
+        internal int GetTotalFilteredAnimals(AnimalFilter animalFilters)
+        {
+            if (animalFilters != null)
+            {
+                CowModel animalFilter = animalFilters.cow;
             }
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -148,7 +870,7 @@ namespace GaushalaAPI.DBContext
             return 0;
         }
 
-        internal object GetTotalCows()
+        internal object GetTotalAnimals()
         {
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -212,10 +934,7 @@ namespace GaushalaAPI.DBContext
                     {
                         System.Console.WriteLine("HELLO");
                         //
-                        /*SqlCommand sqlcmd = new SqlCommand("INSERT INTO[dbo].[Animals] ([TagNo],[Name],[DOB],[Category],[Gender],[Breed],[Colour],[SireID],[DamID],[SireNo]"+
-                   ",[SireName],[DamNo],[DamName],[DBLY],[SDBLY],[ButterFat],[PregnancyStatus],[Status],[ReproductiveStatus],[MilkingStatus],[Remarks],[AdditionalInfo],[Picture]"+
-                   ",[Lactation],[Type],[SemenDoses],[Weight],[Alive],[BirthLactationNumber],[Height])VALUES"+
-                   "(", conn);*/
+                        
                         string query = "Update [dbo].[Animals] set [TagNo] = @tagNo,[Name] = @name";
                         if (cow.Breed != null)
                         {
@@ -475,7 +1194,7 @@ namespace GaushalaAPI.DBContext
             return data;
         }
 
-        internal Dictionary<string, object> AddCowsServiceData(CowServiceDataModel conceive)
+        internal Dictionary<string, object> AddAnimalsServiceData(AnimalserviceDataModel conceive)
         {
 
             Dictionary<string, object> data = new Dictionary<string, object>();
@@ -746,23 +1465,7 @@ namespace GaushalaAPI.DBContext
                     if (sqlrdr.Read())
                     {
                         cowModel = new CowModel(sqlrdr);
-                        /*cowModel.CowID = Convert.ToInt32(sqlrdr["Id"]);
-                        cowModel.CowTagNo = Convert.ToString(sqlrdr["CowTagNo"]);
-                        cowModel.CowName = Convert.ToString(sqlrdr["CowName"]);
-                        cowModel.Breed = Convert.ToString(sqlrdr["Breed"]);
-                        cowModel.Colour = Convert.ToString(sqlrdr["Colour"]);
-                        //cowModel.SireID = Convert.ToInt32(sqlrdr["SireID"]);
-                        //cowModel.DamID = Convert.ToInt32(sqlrdr["DamID"]);
-                        /*m1.MilkingPK = Convert.ToInt64(sqlrdr["MilkingPK"]);
-                        m1.CowNo = sqlrdr["CowNo"].ToString();
-                        m1.Date = Convert.ToDateTime(sqlrdr["Date"]);
-                        m1.MorningValue = Convert.ToDecimal(sqlrdr["MorningValue"]);
-                        m1.EveningValue = Convert.ToDecimal(sqlrdr["EveningValue"]);
-                        m1.CalfValue = Convert.ToDecimal(sqlrdr["CalfValue"]);
-                        m1.Total = Convert.ToDecimal(sqlrdr["Total"]);
-                        m1.Breed = Convert.ToString(sqlrdr["Breed"]);
-                        m1.Remarks = Convert.ToString(sqlrdr["Remarks"]);
-                        m1.Lactation = Convert.ToString(sqlrdr["Lactation"]);*/
+                        
                     }
                     sqlrdr.Close();
                     conn.Close();
@@ -777,23 +1480,9 @@ namespace GaushalaAPI.DBContext
 
             }
         }
-
-        public Dictionary<long, object> GetCowsIdNamePairByTagNo(string tagNo,int pageno=1)
+        public Dictionary<int, string> GetAnimalsIdNamePairByTagNo(string tagNo,int pageno=1)
         {
-
-            Dictionary<long, object> cows = new Dictionary<long, object>();
-            AnimalFilter animalFilter = new AnimalFilter();
-            animalFilter.TagNo = "%" + tagNo + "%";
-            animalFilter.PageNo = pageno;
-            animalFilter.RecordsPerPage = 20;
-            animalFilter.Category = "COW";
-            animalFilter.OrderBy = "TagNo";
-            animalFilter.Order = "ASC";
-            animalFilter.GetCategory = false;
-            cows = base.GetAnimalsIDNameTagNoPair(animalFilter);
-            //data["data"] = heifers;
-            return cows;
-            /*Dictionary<int, string> CowIdPair = new Dictionary<int, string>();
+            Dictionary<int, string> CowIdPair = new Dictionary<int, string>();
             int limit = 20;
             int offset = (pageno-1)*limit;
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
@@ -820,6 +1509,7 @@ namespace GaushalaAPI.DBContext
                     {
                         Console.WriteLine("Date FOund" + Convert.ToString(sqlrdr["TagNo"]));
                         CowIdPair.Add(Convert.ToInt32(sqlrdr["Id"]), Convert.ToString(sqlrdr["TagNo"]));
+                        
                     }
                     sqlrdr.Close();
                     conn.Close();
@@ -831,7 +1521,7 @@ namespace GaushalaAPI.DBContext
                 }
                 return CowIdPair;
             }
-            */
+
         }
         public List<Dictionary<string, object>> GetSires(BullFilterModel bullFilter)
         {
@@ -861,8 +1551,8 @@ namespace GaushalaAPI.DBContext
                     tagNo = "%" + bull_.TagNo+ "%" ;
                 }
             }
-           // List<BullModel> cowsList = new List<BullModel>();
-            List<Dictionary<string, object>> cowsList_ = new List<Dictionary<string, object>>();
+           // List<BullModel> AnimalsList = new List<BullModel>();
+            List<Dictionary<string, object>> AnimalsList_ = new List<Dictionary<string, object>>();
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
@@ -906,37 +1596,26 @@ namespace GaushalaAPI.DBContext
                         bull["weight"] = sqlrdr["Weight"].ToString();
                         //bull["colour"] = sqlrdr["Colour"].ToString();
                         bull["colour"] = sqlrdr["Colour"].ToString();
-                        /*m1.MilkingPK = Convert.ToInt64(sqlrdr["MilkingPK"]);
-                        m1.CowNo = sqlrdr["CowNo"].ToString();
-                        m1.Date = Convert.ToDateTime(sqlrdr["Date"]);
-                        m1.MorningValue = Convert.ToDecimal(sqlrdr["MorningValue"]);
-                        m1.EveningValue = Convert.ToDecimal(sqlrdr["EveningValue"]);
-                        m1.CalfValue = Convert.ToDecimal(sqlrdr["CalfValue"]);
-                        m1.Total = Convert.ToDecimal(sqlrdr["Total"]);
-                        m1.Breed = Convert.ToString(sqlrdr["Breed"]);
-                        m1.Remarks = Convert.ToString(sqlrdr["Remarks"]);
-                        m1.Lactation = Convert.ToString(sqlrdr["Lactation"]);*/
-
-                        //cowsList.Add(BullModel);
-                        cowsList_.Add(bull);
+                        
+                        //AnimalsList.Add(BullModel);
+                        AnimalsList_.Add(bull);
                     }
                     sqlrdr.Close();
                     conn.Close();
-                    return cowsList_;
+                    return AnimalsList_;
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.ToString());
-                    return cowsList_;
+                    return AnimalsList_;
                 }
             }
         }
-
-        internal int GetTotalFilteredSires(BullFilterModel cowFilters)
+        internal int GetTotalFilteredSires(BullFilterModel animalFilters)
         {
-            if (cowFilters != null)
+            if (animalFilters != null)
             {
-                BullModel cow_ = cowFilters.bull;
+                BullModel animalFilter = animalFilters.bull;
             }
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -962,7 +1641,6 @@ namespace GaushalaAPI.DBContext
             }
             return 0;
         }
-
         internal object GetTotalSires()
         {
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
@@ -1107,61 +1785,7 @@ namespace GaushalaAPI.DBContext
             }
             return colors;
         }
-        public bool isTagNoUnique(string tagNo,long? id=null)
-        {
-            if (tagNo != null)
-            {
-                string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
-                using (SqlConnection conn = new SqlConnection(connectionString))
-                {
-                    //Console.WriteLine("Select count(*) as total from Animals where TagNo = @TagNo");
-                    string query = $"Select count(*) as total from Animals where TagNo = @TagNo";
-                    if (id != null)
-                    {
-                        query += " and ID != @Id";
-                    }
-                    //Console.WriteLine(query);
-                    SqlCommand sqlcmd = new SqlCommand();
-                    sqlcmd.Connection = conn;
-                    sqlcmd.CommandText = query;
-                    try
-                    {
-                        sqlcmd.Parameters.Add("@TagNo", System.Data.SqlDbType.VarChar);
-                        sqlcmd.Parameters["@TagNo"].Value = tagNo.Trim();
-                        if (id != null)
-                        {
-                            sqlcmd.Parameters.Add("@Id", System.Data.SqlDbType.BigInt);
-                            sqlcmd.Parameters["@Id"].Value = id;
-                        }
-                        conn.Open();
-                        SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
-                        if (sqlrdr.Read())
-                        {
-                            int total = Convert.ToInt32(sqlrdr.GetValue(0));
-                            sqlrdr.Close();
-                            conn.Close();
-                            if (total <= 0)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        return false;
-                    }
-                }
-                return false;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        
         public Dictionary<string, object> GetCalvingDetailByCowId(long id)
         {
             bool GetIntercalvperiod = true;
@@ -1224,7 +1848,7 @@ namespace GaushalaAPI.DBContext
                                 intercalv[Convert.ToInt32(calv["lactationNo"])] = (DateTime)(calv["deliveryDate"]);
                             }
                             calv["deliveryDate"] = Helper.FormatDate(calv["deliveryDate"]);
-                            //CowServiceDataModel conceive = new CowServiceDataModel(sqlrdr);
+                            //AnimalserviceDataModel conceive = new AnimalserviceDataModel(sqlrdr);
                             //cowConcieveData.Add(calv);
                             //cowConcieveData.Add(conceive);
                         }
@@ -1454,7 +2078,7 @@ namespace GaushalaAPI.DBContext
         public Dictionary<long, object> GetCowTagNoNameByIds(List<long> ids)
         {
             
-            Dictionary<long, object> cows = new Dictionary<long, object>();
+            Dictionary<long, object> Animals = new Dictionary<long, object>();
             string values = "";
             if (ids.Count > 0)
             {
@@ -1469,7 +2093,7 @@ namespace GaushalaAPI.DBContext
             }
             else
             {
-                return cows;
+                return Animals;
             }
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -1487,7 +2111,7 @@ namespace GaushalaAPI.DBContext
                         Dictionary<string, string> cowData = new Dictionary<string, string>();
                         cowData["name"] = Convert.ToString(sqlrdr["Name"]);
                         cowData["tagNo"] = Convert.ToString(sqlrdr["TagNo"]);
-                        cows[Convert.ToInt64(sqlrdr["Id"])] = cowData;
+                        Animals[Convert.ToInt64(sqlrdr["Id"])] = cowData;
                     }
                 }
                 catch (Exception e)
@@ -1495,7 +2119,7 @@ namespace GaushalaAPI.DBContext
                     Console.WriteLine("Error " + e.Message);
                 }
             }
-            return cows;
+            return Animals;
         }
         public Dictionary<string,string> GetCowTagNoNameById(long id)
         {
@@ -1700,11 +2324,11 @@ namespace GaushalaAPI.DBContext
             }
             return data;
         }
-        public static Dictionary<long, string> GetCowsNamesByIds(IConfiguration _configuration, List<long> cows)
+        public static Dictionary<long, string> GetAnimalsNamesByIds(IConfiguration _configuration, List<long> Animals)
         {
-            Dictionary<long, string> cowsIdName = new Dictionary<long, string>();
+            Dictionary<long, string> AnimalsIdName = new Dictionary<long, string>();
             string ids = "";
-            foreach (var m in cows)
+            foreach (var m in Animals)
             {
                 if (ids != "")
                 {
@@ -1727,20 +2351,20 @@ namespace GaushalaAPI.DBContext
                         SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
                         while (sqlrdr.Read())
                         {
-                            cowsIdName[Convert.ToInt64(sqlrdr["Id"])] = sqlrdr["TagNo"].ToString();
+                            AnimalsIdName[Convert.ToInt64(sqlrdr["Id"])] = sqlrdr["TagNo"].ToString();
                         }
                         sqlrdr.Close();
                         conn.Close();
-                        return cowsIdName;
+                        return AnimalsIdName;
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex.ToString());
-                        return cowsIdName;
+                        return AnimalsIdName;
                     }
                 }
             }
-            return cowsIdName;
+            return AnimalsIdName;
         }
 
         public static bool IsTagNoUnique_(IConfiguration _configuration, string tagNo, long? id = null)
@@ -1801,7 +2425,7 @@ namespace GaushalaAPI.DBContext
         internal Dictionary<string, object> UpdateCowLactationNo(long CowID,int lactationNumber=-1, SqlConnection? conn2 = null, SqlTransaction? tran = null)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
-            int maxLactaionNumber = CowsContext.GetMaxLactationNumber(_configuration, CowID);
+            int maxLactaionNumber = AnimalsContext.GetMaxLactationNumber(_configuration, CowID);
             maxLactaionNumber++;
             Console.WriteLine("Max Lactation Number Before = " + maxLactaionNumber);
             Console.WriteLine("Lactation Number = " + lactationNumber);
@@ -2417,5 +3041,6 @@ namespace GaushalaAPI.DBContext
                 return data;
             }
         }
+        */
     }
 }

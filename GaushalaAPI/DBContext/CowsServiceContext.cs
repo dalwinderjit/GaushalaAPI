@@ -18,7 +18,6 @@ namespace GaushalaAPI.DBContext
 
         internal Dictionary<string, object> AddCowServiceData(CowServiceDataModel conceive)
         {
-
             Dictionary<string, object> data = new Dictionary<string, object>();
             CowServiceDataModel._configuration = this._configuration;
             if (conceive.ValidateAdd() == true)
@@ -37,11 +36,8 @@ namespace GaushalaAPI.DBContext
                     }
                 }
                 string query = $"INSERT into [dbo].[CowConceiveData] ({cols}) OUTPUT INSERTED.ID values({params_});";
-
                 Console.WriteLine(query);
-                
-
-                    string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+                string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     SqlCommand sqlcmd = new SqlCommand(query, conn);
