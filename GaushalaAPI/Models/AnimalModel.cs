@@ -431,7 +431,7 @@ namespace GaushalaAPI.Models
             catch (Exception e)
             {
                 Remarks = "";
-                //Console.WriteLine("Weight not found"); Dalwidner
+                //Console.WriteLine("Weight not found"); Dalwidner HELLO
             }
             if (sqlrdr["Sold"] != null)
             {
