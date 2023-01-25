@@ -35,21 +35,29 @@ namespace GaushalaAPI.Authorization
         }*/
         public async Task Invoke(HttpContext context, IConfiguration iconfiguration, IJwtUtils jwtUtils)
         {
-            Console.WriteLine("HELLO INVOke");
-            //context.Response.Cookies.Append("__secure_token", "LKJLk");
-            string token = null;
-            context.Request.Cookies.TryGetValue("__secure_token", out token);
-            Console.WriteLine("TOKEN Cookie" + token);
-            //token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-            //Console.WriteLine(token);
-            var userId = jwtUtils.ValidateJwtToken(token);
-            if (userId != null)
+            try
             {
-                // attach user to context on successful jwt validation
-                UsersContext usersContext = new UsersContext(iconfiguration);
-                context.Items["User"] = usersContext.GetUserById(userId.Value);
+                Console.WriteLine("HELLO INVOke");
+                //context.Response.Cookies.Append("__secure_token", "LKJLk");
+                string token = null;
+                context.Request.Cookies.TryGetValue("__secure_token", out token);
+                Console.WriteLine("TOKEN Cookie" + token);
+                //token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+                //Console.WriteLine(token);
+                var userId = jwtUtils.ValidateJwtToken(token);
+                if (userId != null)
+                {
+                    // attach user to context on successful jwt validation
+                    UsersContext usersContext = new UsersContext(iconfiguration);
+                    context.Items["User"] = usersContext.GetUserById(userId.Value);
+                }
+                await _next(context);
             }
-            await _next(context);
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+            }
         }
     }
 }

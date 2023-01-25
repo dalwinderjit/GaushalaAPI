@@ -174,7 +174,7 @@ namespace GaushalaAPI.Controllers
             //return cowContext.GetCows();
         }
         [HttpPost]
-        public Dictionary<int, string> GetCowsIDNamePairByTagNo(string tagNo,int pageNo)
+        public Dictionary<long, object> GetCowsIDNamePairByTagNo(string tagNo,int pageNo)
         {
             //return "HELLO";
             return cowContext.GetCowsIdNamePairByTagNo(tagNo,pageNo);

@@ -50,6 +50,7 @@ namespace GaushalaAPI.Models
                 return "";
             }
         }
+        
         public static object IsNullOrEmpty(object obj){
             if(obj==null || Convert.ToString(obj).Trim()==""){
                 return "";

@@ -11,8 +11,6 @@ namespace GaushalaAPI.Models
     public class AnimalModel
     {
         public Dictionary<string, string>? errors { get; set; }
-        [Key]
-        [Required(ErrorMessage = "Plese select 1")]
         public long? Id { get; set; }
         public string? TagNo { get; set; }
         public string? Name { get; set; }
@@ -47,30 +45,10 @@ namespace GaushalaAPI.Models
         public decimal? Height { get; set; }
         public int? SemenDoses { get; set; }
         public bool? Sold { get; set; }
-        /*public int? SemenDoses { get {
-                if (Category != null)
-                {
-                    if (Category.ToString().ToUpper() == "BULL")
-                        return _semenDoses;
-                    else
-                        return null;
-                }
-                else
-                {
-                    return null;
-                }
-
-            } set {
-                if (Category != null)
-                {
-                    if (Category.ToString().ToUpper() == "BULL")
-                        _semenDoses = value;
-                }
-            }
-        }*/
         public int? NoOfTeatsWorking {get ; set; }
         public int? Location { get; set; }
         public IFormFile? formFile { get; set; }
+        public bool? BelongsToGaushala { get; set; }
         public bool AnimalFound {get; set;}
         public AnimalModel()
         {
@@ -78,19 +56,20 @@ namespace GaushalaAPI.Models
         }
         public Boolean ValidateImage()
         {
+            int ImageSize = 1024 * 200;   //200KB
             if (formFile != null)
             {
                 string[] supportedTypes = { ".jpg", ".jpeg", ".JPG", ".JPEG", ".png", ".PNG" };
                 string extension = System.IO.Path.GetExtension(formFile.FileName);
-                Console.WriteLine("EXT" + extension);
+                //Console.WriteLine("EXT" + extension);
                 if (!Array.Exists(supportedTypes, element => element == extension))
                 {
                     this.errors.Add("picture", "Not valid Image");
                     return false;
                 }
-                if (formFile.Length > 300)
+                if (formFile.Length > ImageSize)
                 {
-                    this.errors.Add("picture", "Image size too large");
+                    this.errors.Add("picture", $"Image size too large ({formFile.Length})");
                     return false;
                 }
                 if (formFile.Length <= 0)
@@ -111,26 +90,25 @@ namespace GaushalaAPI.Models
         }
         public string SaveImage()
         {
-            
             if (formFile != null)
             {
                 string[] supportedTypes = { ".jpg", ".jpeg",".JPG", ".JPEG", ".png" ,".PNG"};
                 string extension = System.IO.Path.GetExtension(formFile.FileName);
-                Console.WriteLine("EXT"+extension);
+                //Console.WriteLine("EXT"+extension);
                 if (!Array.Exists(supportedTypes,element=> element==extension) ){
                     return "Extension not matched";
                 }
                 if (formFile.Length > 0)
                 {
-
                     //string path = Path.Combine(@"D:\dalwinder\projects\djjs-gaushala\soruce-code\gaushalaTemplate\", "images");
-                    string path = Path.Combine(@"F:\PROJECTS\djjs-gaushala\soruce-code\html\gaushalaTemplate\", "images");
+                    //string path = Path.Combine(@"F:\PROJECTS\djjs-gaushala\soruce-code\html\gaushalaTemplate\", "images");
+                    string path = "images";
                     if (!Directory.Exists(path))
                         Directory.CreateDirectory(path);
                     //var filePath = Path.GetTempFileName();
                     int i = 0;
                     string fileName_ =this.Id+extension;
-                    Console.WriteLine(fileName_);
+                    //Console.WriteLine(fileName_);
                     string fileNameWithPath = Path.Combine(path, fileName_);
                     while (System.IO.File.Exists(fileNameWithPath))
                     {
@@ -453,7 +431,7 @@ namespace GaushalaAPI.Models
             catch (Exception e)
             {
                 Remarks = "";
-                //Console.WriteLine("Weight not found");
+                //Console.WriteLine("Weight not found"); Dalwidner HELLO
             }
             if (sqlrdr["Sold"] != null)
             {
@@ -608,19 +586,20 @@ namespace GaushalaAPI.Models
         public void GenerateImageName(long id)
         {
             long max_id = ++id;
-            Console.WriteLine($"New Id {max_id}");
+            //Console.WriteLine($"New Id {max_id}");
             if (this.formFile != null)
             {
-                Console.WriteLine("yew file provided");
+                //Console.WriteLine("yew file provided");
                 if (true)
                 {
                     string[] supportedTypes = { ".jpg", ".jpeg", ".png", ".PNG" };
                     string extension = System.IO.Path.GetExtension(formFile.FileName);
-                    Console.Write("OK001");
+                    //Console.Write("OK001");
                     if (formFile.Length > 0)
                     {
                         Console.Write("OK002");
-                        string path = Path.Combine(@"F:\PROJECTS\djjs-gaushala\soruce-code\html\gaushalaTemplate\", "images");
+                        string path = "images";// Path.Combine(@"F:\PROJECTS\djjs-gaushala\soruce-code\html\gaushalaTemplate\", "images");
+                        //string path = Path.Combine(@"F:\PROJECTS\djjs-gaushala\soruce-code\html\gaushalaTemplate\", "images");
                         //string path = Path.Combine(@"D:\dalwinder\projects\djjs-gaushala\soruce-code\gaushalaTemplate\", "images");
                         if (!Directory.Exists(path))
                             Directory.CreateDirectory(path);
@@ -629,19 +608,19 @@ namespace GaushalaAPI.Models
                         string fileName_ = max_id + extension;
                         //Console.WriteLine(fileName_);
                         string fileNameWithPath = Path.Combine(path, fileName_);
-                        Console.WriteLine(fileNameWithPath);
-                        Console.WriteLine("OK000004");
+                        //Console.WriteLine(fileNameWithPath);
+                        //Console.WriteLine("OK000004");
                         while (System.IO.File.Exists(fileNameWithPath))
                         {
                             fileName_ = max_id + "_" + i + extension;
                             fileNameWithPath = Path.Combine(path, fileName_); i++;
-                            Console.Write(fileName_);
+                            //Console.Write(fileName_);
                         }
                         //Console.WriteLine(filePath);
                         this.Picture = fileName_;
-                        Console.Write("OK003");
-                        Console.Write(fileName_);
-                        Console.Write("picture"+this.Picture);
+                        //Console.Write("OK003");
+                        //Console.Write(fileName_);
+                        //Console.Write("picture"+this.Picture);
                     }
                     else
                     {
@@ -660,27 +639,28 @@ namespace GaushalaAPI.Models
             Console.WriteLine("Savign image");
             if (formFile != null)
             {
-                Console.WriteLine("Savign image 1");
+                //Console.WriteLine("Savign image 1");
                 if (formFile.Length > 0)
                 {
                     try{
-                        Console.WriteLine("Savign image2");
-                        string path = Path.Combine(@"F:\PROJECTS\djjs-gaushala\soruce-code\html\gaushalaTemplate\", "images");
+                        //Console.WriteLine("Savign image2");
+                        string path =  "images";
+                        //string path = Path.Combine(@"F:\PROJECTS\djjs-gaushala\soruce-code\html\gaushalaTemplate\", "images");
                         //string path = Path.Combine(@"D:\dalwinder\projects\djjs-gaushala\soruce-code\gaushalaTemplate\", "images");
                         if (!Directory.Exists(path))
                             Directory.CreateDirectory(path);
                         //var filePath = Path.GetTempFileName();
                         string fileNameWithPath = Path.Combine(path, this.Picture);
-                        Console.WriteLine(fileNameWithPath);
+                        //Console.WriteLine(fileNameWithPath);
                         using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
                         {
-                            Console.WriteLine("HELLO");
+                            //Console.WriteLine("HELLO");
                             formFile.CopyTo(stream);
-                            Console.WriteLine("Image saved");
+                            //Console.WriteLine("Image saved");
                         }
                     }catch(Exception e){
-                        Console.WriteLine(e.Message);
-                        Console.WriteLine(e.StackTrace);
+                        //Console.WriteLine(e.Message);
+                        //Console.WriteLine(e.StackTrace);
                         return false;
                     }
                     return true;
