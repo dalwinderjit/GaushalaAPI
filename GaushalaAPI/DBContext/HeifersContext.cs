@@ -47,7 +47,38 @@ namespace GaushalaAPI.DBContext
             Console.WriteLine("Returnign again");
             return data;
         }
-        internal Dictionary<string, object> UpdateHeifer(AnimalModel ani,SqlConnection? conn2=null, SqlTransaction? tran = null)
+        internal Dictionary<string,object> UpdateHeifer(AnimalModel ani,SqlConnection? conn2=null,SqlTransaction? tran=null)
+        {
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            //this.Testing(ani);
+            //return data;
+            string image = null;
+            ani.Category = "HEIFER";
+            ani.Gender= "FEMALE";
+            ani.Lactation = 0;
+            //ani.BirthLactationNumber = 1;
+            ani.GenerateImageName(CowsContext.GetMaxAnimalId(this._configuration));
+            Console.WriteLine("picture " + ani.Picture);
+            bool addSire = false;
+            bool addDam = false;
+            if (ani.DamID == null)
+            {
+                addDam = true;
+                Console.WriteLine("Need to add Dam");
+            }
+            if (ani.SireID == null)
+            {
+                Console.WriteLine("Need to add Sire");
+                addSire = true;
+            }
+            data = base.UpdateAnimal(ani,addDam,addSire);
+            if (((Dictionary<string,string>)data["data"])["status"] == "success") {
+                ani.SaveImage2();
+            }
+            Console.WriteLine("Returnign again");
+            return data;
+        }
+        internal Dictionary<string, object> UpdateHeifer2(AnimalModel ani,SqlConnection? conn2=null, SqlTransaction? tran = null)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             string image = null;
@@ -266,7 +297,7 @@ namespace GaushalaAPI.DBContext
                 }
             }
         }
-        internal Dictionary<long, object> GetGetHeifersIDNamePairByTagNo(string tagNo, int pageNo, int recordsPerPage)
+        internal Dictionary<long, object> GetHeifersIDNamePairByTagNo(string tagNo, int pageNo, int recordsPerPage)
         {
             //Dictionary<string, object> data = new Dictionary<string, object>();
             Dictionary<long, object> heifers = new Dictionary<long, object>();
@@ -278,7 +309,25 @@ namespace GaushalaAPI.DBContext
             animalFilter.OrderBy = "TagNo";
             animalFilter.Order = "ASC";
             animalFilter.GetCategory = false;
+            animalFilter.cols = new String[]{ "Id", "Name", "TagNo", "Category" };
             heifers = base.GetAnimalsIDNameTagNoPair(animalFilter);
+            //data["data"] = heifers;
+            return heifers;
+        }
+        internal List<Dictionary<string, object>> GetHeifers(string tagNo, int pageNo, int recordsPerPage)
+        {
+            //Dictionary<string, object> data = new Dictionary<string, object>();
+            List<Dictionary<string, object>> heifers = new List<Dictionary<string, object>>();
+            AnimalFilter animalFilter = new AnimalFilter();
+            animalFilter.TagNo = "%"+tagNo+"%";
+            animalFilter.PageNo = pageNo;
+            animalFilter.RecordsPerPage = recordsPerPage;
+            animalFilter.Category = "HEIFER";
+            animalFilter.OrderBy = "TagNo";
+            animalFilter.Order = "ASC";
+            animalFilter.GetCategory = false;
+            animalFilter.cols = new String[]{ "Id", "Name", "TagNo", "Category" };
+            heifers = base.GetAnimals(animalFilter);
             //data["data"] = heifers;
             return heifers;
         }

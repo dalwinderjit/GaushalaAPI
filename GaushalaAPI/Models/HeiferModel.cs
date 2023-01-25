@@ -25,6 +25,13 @@ namespace GaushalaAPI.Models
             Regex re;
             re = new Regex(Validations.ValidTagNoRegEx);
             Console.WriteLine(this.TagNo);
+            if (type == "Edit" || type=="Update") {
+                if (this.Id == null)
+                {
+                    errors.Add("Id", "Pleae Select the Heifer");
+                    error = false;
+                }
+            }
             if(this.TagNo == null)
             {
                 errors.Add("tagNo", "Pleae Enter Tag Number of Heifer");

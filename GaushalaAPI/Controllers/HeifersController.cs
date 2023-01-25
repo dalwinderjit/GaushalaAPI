@@ -26,9 +26,14 @@ namespace GaushalaAPI.Controllers
             heifersContext = new HeifersContext(_configuration);
         }
         [HttpPost]
-        public Dictionary<long,object> GetGetHeifersIDNamePairByTagNo(string tagNo,int pageNo,int recordsPerPage)
+        public Dictionary<long,object> GetHeifersIDNamePairByTagNo(string tagNo,int pageNo,int recordsPerPage)
         {
-            return heifersContext.GetGetHeifersIDNamePairByTagNo(tagNo,pageNo,recordsPerPage);
+            return heifersContext.GetHeifersIDNamePairByTagNo(tagNo,pageNo,recordsPerPage);
+        }
+        [HttpPost]
+        public List<Dictionary<string, object>> GetHeifers(string tagNo,int pageNo,int recordsPerPage)
+        {
+            return heifersContext.GetHeifers(tagNo,pageNo,recordsPerPage);
         }
         [HttpPost]
         public Dictionary<string, object> AddHeifer(HeiferModel heifer)
@@ -44,6 +49,27 @@ namespace GaushalaAPI.Controllers
                 data["errors"] = heifer.errors;
                 return data;
             }
+        }
+        [HttpPost]
+        public Dictionary<string, object> UpdateHeifer(HeiferModel heifer)
+        {
+            if (heifer.ValidateHeifer(heifersContext, "Update") == true)
+            {
+                return heifersContext.UpdateHeifer(heifer);
+            }
+            else
+            {
+                Dictionary<string, object> data = new Dictionary<string, object>();
+                data["message"] = "Validation Failed";
+                data["errors"] = heifer.errors;
+                return data;
+            }
+        }
+        [HttpPost]
+        public HeiferModel GetHeiferById(long id)
+        {
+            heifersContext.GetHeiferDetailById(id);
+            return new HeiferModel();
         }
     }
 }

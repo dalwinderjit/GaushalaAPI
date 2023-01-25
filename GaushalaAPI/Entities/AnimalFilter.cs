@@ -7,6 +7,7 @@ namespace GaushalAPI.Entities
 {
     public class AnimalFilter
     {
+        public int? Id { get; set; }
         public string? TagNo { get; set; }
         public string? Name { get; set; }
         public string? Category { get; set; }
@@ -17,6 +18,9 @@ namespace GaushalAPI.Entities
         public int? RecordsPerPage { get; set; }
         public int? Start { get; set; }
         public int? Length { get; set; }
+
+        public string[]? cols { get; set; }
+        
         
         public void CalculateStartLength(){
             if(this.PageNo!=null && this.RecordsPerPage!=null){

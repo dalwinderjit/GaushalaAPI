@@ -107,7 +107,12 @@ namespace GaushalaAPI.DBContext
                 {
                     offset += $" OFFSET @Start ROWS FETCH NEXT @Length ROWS ONLY";
                 }
-                string query = $"Select * from Animals where {where} {orderBy}  {offset}";
+                string cols = "*";
+                if (animalFilter.cols.Length > 0)
+                {
+                    cols = String.Join(",", animalFilter.cols);
+                }
+                string query = $"Select {cols} from Animals where {where} {orderBy}  {offset}";
                 Console.Write(query);
                 SqlCommand sqlcmd = new SqlCommand(query, conn);
                 //SqlCommand sqlcmd = new SqlCommand("Update [dbo].[Animals] set [TagNo] = @tagNo,[Name] = @name,[Category] = @Category where [Animals].[Id] = @ID", conn);
@@ -159,13 +164,24 @@ namespace GaushalaAPI.DBContext
                         //Console.WriteLine("HELLO");
                         Dictionary<string, object> animal = new Dictionary<string, object>();
                         animal["sno"] = counter;
-                        animal["id"] = sqlrdr["Id"];
-                        animal["tagNo"] = sqlrdr["TagNo"].ToString();
-                        animal["name"] = sqlrdr["Name"].ToString();
-                        animal["dob"] = Helper.FormatDate(sqlrdr["DOB"]) ;
-                        animal["breed"] = sqlrdr["Breed"].ToString();
-                        animal["weight"] = sqlrdr["Weight"].ToString();
-                        animal["colour"] = sqlrdr["Colour"].ToString();
+                        if (animalFilter.cols.Length > 0)
+                        {
+                            for (int i = 0; i < animalFilter.cols.Length; i++)
+                            {
+                                animal[animalFilter.cols[i]] = sqlrdr[animalFilter.cols[i]];
+                            }
+                        }
+                        else
+                        {
+                            animal["id"] = sqlrdr["Id"];
+                            animal["tagNo"] = sqlrdr["TagNo"].ToString();
+                            animal["name"] = sqlrdr["Name"].ToString();
+                            animal["dob"] = Helper.FormatDate(sqlrdr["DOB"]) ;
+                            animal["breed"] = sqlrdr["Breed"].ToString();
+                            animal["weight"] = sqlrdr["Weight"].ToString();
+                            animal["colour"] = sqlrdr["Colour"].ToString();
+
+                        }
                         AnimalsList_.Add(animal);
                         counter++;
                     }
@@ -210,7 +226,12 @@ namespace GaushalaAPI.DBContext
             {
                 offset += $" OFFSET @Start ROWS FETCH NEXT @Length ROWS ONLY";
             }
-            string query = $"Select * from Animals where {where} {orderBy}  {offset}";
+            string cols = "*";
+            if (animalFilter.cols.Length > 0)
+            {
+                cols = String.Join(",", animalFilter.cols);
+            }
+            string query = $"Select {cols} from Animals where {where} {orderBy}  {offset}";
             Console.Write(query);
             return query;
         }
@@ -316,6 +337,72 @@ namespace GaushalaAPI.DBContext
             }
             return addQuery;
         }
+        public string GenerateUpdateAnimalSqlQuery(AnimalModel ani,AnimalFilter aniFilter)
+        {
+            string UpdateQuery = "";
+            switch (ani.Category.ToUpper())
+            {
+                case "HEIFER":
+                    string cols = "";// "[Gender],[TagNo],[Name],[Breed],[Lactation],[DOB],[Colour],[Weight],[Height],[BirthLactationNumber],[PregnancyStatus],[Status],[ReproductiveStatus],[MilkingStatus],[Location]";
+                    string where = "";
+                    //Build Where Clause for Animal Filter ????
+                    where = "where Id = @Id";
+
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.MilkingStatus), ref cols, "MilkingStatus");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Location), ref cols, "Location");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.ReproductiveStatus), ref cols, "ReproductiveStatus");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Status), ref cols, "Status");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.PregnancyStatus), ref cols, "PregnancyStatus");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.BirthLactationNumber), ref cols, "BirthLactationNumber");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Height), ref cols, "Height");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Weight), ref cols, "Weight");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Colour), ref cols, "Colour");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DOB), ref cols, "DOB");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Lactation), ref cols, "Lactation");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Name), ref cols, "Name");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Breed), ref cols, "Breed");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.TagNo), ref cols, "TagNo");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Gender), ref cols, "Gender");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Picture), ref cols, "Picture");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Remarks), ref cols, "Remarks");
+                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Category), ref cols, "Category");
+
+                    if (ani.DamID != null)
+                    {
+                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DamID), ref cols, "DamID");
+                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DBLY), ref cols, "DBLY");
+                    }
+                    else
+                    {
+                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DamName), ref cols, "DamName");
+                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DamNo), ref cols, "DamNo");
+                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DBLY), ref cols, "DBLY");
+                    }
+                    if (ani.SireID != null)
+                    {
+                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SireID), ref cols, "SireID");
+                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SDBLY), ref cols, "SDBLY");
+                    }
+                    else
+                    {
+                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SireName), ref cols, "SireName");
+                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SireNo), ref cols, "SireNo");
+                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SDBLY), ref cols, "SDBLY");
+                    }
+                    //string query = $"INSERT into [dbo].[Animals] ({cols}) OUTPUT INSERTED.ID values({params_});";
+                    UpdateQuery = $"UPDATE [dbo].[Animals] set {cols} {where};";
+                    Console.WriteLine(UpdateQuery);
+                    return UpdateQuery;
+                    break;
+                case "CALF":
+                    break;
+                case "COW":
+                    break;
+                case "BULL":
+                    break;
+            }
+            return UpdateQuery;
+        }
         public void addColToQuery(bool add,ref string cols,ref string params_,string colName)
         {
             if (add==true)
@@ -330,6 +417,17 @@ namespace GaushalaAPI.DBContext
                     params_ += ",";
                 }
                 params_ += $"@{colName}";
+            }
+        }
+        public void addColToUpdateQuery(bool add, ref string cols, string colName)
+        {
+            if (add == true)
+            {
+                if (cols.Trim() != "")
+                {
+                    cols += ",";
+                }
+                cols += $"{colName} = @{colName}";
             }
         }
         public SqlCommand SetSqlCommandParameter(SqlCommand sqlcmd, AnimalModel ani){
@@ -598,6 +696,143 @@ namespace GaushalaAPI.DBContext
                     //Console.WriteLine("Savin Failed");
                     Dictionary<string, string> data2 = new Dictionary<string, string>();
                     data2["message"] = "Animal Save Failed";
+                    data2["status"] = "Failure";
+                    data["data"] = data2;
+                }
+            }catch(Exception e)
+            {
+                //Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+            }
+            //Console.WriteLine("returning data");
+            return data;
+        }
+        internal Dictionary<string,object> UpdateAnimal(AnimalModel ani,bool addDam, bool addSire,SqlConnection? conn2=null,SqlTransaction? tran=null)
+        {
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            try
+            {
+                string image = null;
+                ani.GenerateImageName(CowsContext.GetMaxAnimalId(this._configuration));
+                //Console.WriteLine("picture " + ani.Picture);
+                Dictionary<string, string> errors = new Dictionary<string, string>();
+                SqlConnection conn;
+                if (conn2 != null)
+                {
+                    conn = conn2;
+                }
+                else
+                {
+                    string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+                    conn = new SqlConnection(connectionString);
+                    conn.Open();
+                }
+                if (addDam == true || addSire == true)
+                {
+                    tran = conn.BeginTransaction("UpdateAnimal");
+                }
+                Dictionary<string, object> addDamData = new Dictionary<string, object>();
+                Dictionary<string, object> addSireData = new Dictionary<string, object>();
+                if (addDam == true)
+                {
+                    addDamData = this.AddDam(ani,conn,tran);//, conn, tran);
+                    if (Convert.ToBoolean(addDamData["status"]) == true)
+                    {
+                        ani.DamID = Convert.ToInt64(addDamData["DamID"]);
+                    }
+                }
+                if (addSire == true)
+                {
+                    addSireData = this.AddSire(ani,conn,tran);//, conn, tran);
+                    if (Convert.ToBoolean(addSireData["status"]) == true)
+                    {
+                        ani.SireID = Convert.ToInt64(addSireData["SireID"]);
+                    }
+                }
+                AnimalFilter aniFilter = new AnimalFilter();
+                String query = this.GenerateUpdateAnimalSqlQuery(ani,aniFilter);
+                Console.WriteLine("Query " +query);
+                SqlCommand sqlcmd = new SqlCommand(query, conn);
+                //Console.WriteLine("HELLO command creted");
+                sqlcmd = this.SetSqlCommandParameter(sqlcmd, ani);
+                //Console.WriteLine("Sql parameter set");
+                try
+                {
+                    if (addDam == true || addSire == true)
+                    {
+                        //Console.WriteLine("Assinging Transaction");
+                        sqlcmd.Transaction = tran;
+                        tran.Save("UpdateAnimal");
+                        //Console.WriteLine("Tranasactio nassigned");
+                        //Console.WriteLine("Executing query");
+                        long id = (Int64)sqlcmd.ExecuteNonQuery();
+                        //Console.WriteLine("Executed"+ani.Id);
+                        bool commit = true;
+                        if (addDam == true)
+                        {
+                            if (Convert.ToBoolean(addDamData["status"]) == false)
+                            {
+                                commit = false;
+                            }
+                        }
+                        if (addSire == true)
+                        {
+                            if (Convert.ToBoolean(addSireData["status"]) == false)
+                            {
+                                commit = false;
+                            }
+                        }
+                        //Console.WriteLine("COMMIT" + commit);
+                        if (commit == true)
+                        {
+                            //Console.WriteLine("HELLO HI ");
+                            if (tran != null)
+                            {
+                                //Console.WriteLine("COMMIting");
+                                tran.Commit();
+                                //Console.WriteLine("COMMITED");
+                            }
+                            Dictionary<string, string> data2 = new Dictionary<string, string>();
+                            data2["message"] = $"{ani.Category} Update successfully ID:" + id;
+                            data2["status"] = "success";
+                            data2["animalID"] = "" + ani.Id;
+                            data["data"] = data2;
+                            data["status"] = true;
+                        }
+                        else
+                        {
+                            if (tran != null)
+                            {
+                                tran.Rollback();
+                            }
+                            Dictionary<string, string> data2 = new Dictionary<string, string>();
+                            data2["message"] = "Animal Updation Failed";
+                            data2["status"] = "Failure";
+                            data["data"] = data2;
+                            data["status"] = false;
+                        }
+                        conn.Close();
+                    }
+                    else
+                    {
+                        long id = (Int64)sqlcmd.ExecuteScalar();
+                        Dictionary<string, string> data2 = new Dictionary<string, string>();
+                        data2["message"] = $"{ani.Category} Updated successfully ID:" + id;
+                        data2["status"] = "success";
+                        data2["animalID"] = "" + ani.Id;
+                        data["data"] = data2;
+                        data["status"] = true;
+                        conn.Close();
+                    }
+                    
+                }
+                catch (Exception e)
+                {
+                    //Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
+                    //Console.WriteLine("Savin Failed");
+                    Dictionary<string, string> data2 = new Dictionary<string, string>();
+                    data2["message"] = "Animal Updation Failed";
                     data2["status"] = "Failure";
                     data["data"] = data2;
                 }

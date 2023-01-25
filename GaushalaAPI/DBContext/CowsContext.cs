@@ -791,47 +791,7 @@ namespace GaushalaAPI.DBContext
             animalFilter.Order = "ASC";
             animalFilter.GetCategory = false;
             cows = base.GetAnimalsIDNameTagNoPair(animalFilter);
-            //data["data"] = heifers;
             return cows;
-            /*Dictionary<int, string> CowIdPair = new Dictionary<int, string>();
-            int limit = 20;
-            int offset = (pageno-1)*limit;
-            string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            {
-                System.Console.WriteLine("HELLO"+tagNo);
-                tagNo = "%"+tagNo+"%";
-                SqlCommand sqlcmd = new SqlCommand("Select * from Animals where Category  ='COW' and TagNo like @TagNo order by TagNo  OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY", conn);
-                sqlcmd.Parameters.Add("@TagNo", System.Data.SqlDbType.VarChar);
-                sqlcmd.Parameters["@TagNo"].Value = tagNo;
-
-                sqlcmd.Parameters.Add("@Offset", System.Data.SqlDbType.Int);
-                sqlcmd.Parameters["@Offset"].Value = offset;
-
-                sqlcmd.Parameters.Add("@Limit", System.Data.SqlDbType.Int);
-                sqlcmd.Parameters["@Limit"].Value = limit;
-
-                try
-                {
-                    conn.Open();
-                    //sqlcmd.Prepare();
-                    SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
-                    while (sqlrdr.Read())
-                    {
-                        Console.WriteLine("Date FOund" + Convert.ToString(sqlrdr["TagNo"]));
-                        CowIdPair.Add(Convert.ToInt32(sqlrdr["Id"]), Convert.ToString(sqlrdr["TagNo"]));
-                    }
-                    sqlrdr.Close();
-                    conn.Close();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("HELO");
-                    Console.WriteLine(ex.ToString());
-                }
-                return CowIdPair;
-            }
-            */
         }
         public List<Dictionary<string, object>> GetSires(BullFilterModel bullFilter)
         {
