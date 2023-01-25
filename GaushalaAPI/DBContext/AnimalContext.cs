@@ -433,6 +433,7 @@ namespace GaushalaAPI.DBContext
         public SqlCommand SetSqlCommandParameter(SqlCommand sqlcmd, AnimalModel ani){
             switch(ani.Category.ToUpper()){
                 case "HEIFER":
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Id), ani.Id, "Id", System.Data.SqlDbType.BigInt);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Name), ani.Name, "Name", System.Data.SqlDbType.VarChar);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.TagNo), ani.TagNo, "TagNo", System.Data.SqlDbType.VarChar);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Breed), ani.Breed, "Breed", System.Data.SqlDbType.VarChar);
@@ -765,7 +766,7 @@ namespace GaushalaAPI.DBContext
                         tran.Save("UpdateAnimal");
                         //Console.WriteLine("Tranasactio nassigned");
                         //Console.WriteLine("Executing query");
-                        long id = (Int64)sqlcmd.ExecuteNonQuery();
+                        long id = sqlcmd.ExecuteNonQuery();
                         //Console.WriteLine("Executed"+ani.Id);
                         bool commit = true;
                         if (addDam == true)
@@ -793,7 +794,7 @@ namespace GaushalaAPI.DBContext
                                 //Console.WriteLine("COMMITED");
                             }
                             Dictionary<string, string> data2 = new Dictionary<string, string>();
-                            data2["message"] = $"{ani.Category} Update successfully ID:" + id;
+                            data2["message"] = $"{ani.Category} Update successfully ID:" + ani.Id;
                             data2["status"] = "success";
                             data2["animalID"] = "" + ani.Id;
                             data["data"] = data2;
@@ -815,9 +816,9 @@ namespace GaushalaAPI.DBContext
                     }
                     else
                     {
-                        long id = (Int64)sqlcmd.ExecuteScalar();
+                        int id = sqlcmd.ExecuteNonQuery();
                         Dictionary<string, string> data2 = new Dictionary<string, string>();
-                        data2["message"] = $"{ani.Category} Updated successfully ID:" + id;
+                        data2["message"] = $"{ani.Category} Updated successfully ID:" + ani.Id;
                         data2["status"] = "success";
                         data2["animalID"] = "" + ani.Id;
                         data["data"] = data2;
@@ -838,7 +839,7 @@ namespace GaushalaAPI.DBContext
                 }
             }catch(Exception e)
             {
-                //Console.WriteLine(e.Message);
+                Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
             }
             //Console.WriteLine("returning data");
@@ -1015,7 +1016,7 @@ namespace GaushalaAPI.DBContext
                 return false;
             }
         }
-        public bool IsBirthLactionNumberUnique(int birthLactationNumber,long DamId, int? recordId = null)
+        public bool IsBirthLactionNumberUnique(int birthLactationNumber,long DamId, long? recordId = null)
         {
             if (birthLactationNumber != null && DamId!=null)
             {
@@ -1026,7 +1027,7 @@ namespace GaushalaAPI.DBContext
                     string query = $"Select count(*) as total from Animals where DamId= @DamId and BirthLactationNumber = @BirthLactationNumber";
                     if (recordId != null)
                     {
-                        query += " and Id = @Id";
+                        query += " and Id != @Id";
                     }
                     Console.WriteLine(query);
                     SqlCommand sqlcmd = new SqlCommand();

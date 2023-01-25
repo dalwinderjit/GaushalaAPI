@@ -25,7 +25,7 @@ namespace GaushalAPI.Entities
         public void CalculateStartLength(){
             if(this.PageNo!=null && this.RecordsPerPage!=null){
                 this.Length = this.RecordsPerPage;
-                this.Start = (int)((this.PageNo-1)*this.RecordsPerPage)+1;   //1 2 3 
+                this.Start = (int)((this.PageNo-1)*this.RecordsPerPage);   //0 2 3 
             }
         }
         public int GetStart(){

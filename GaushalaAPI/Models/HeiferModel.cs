@@ -144,7 +144,15 @@ namespace GaushalaAPI.Models
                 errors.Add("birthLactationNumber", "Enter the BirthLactationNumber of Heifer");
                 error = false;
             } else if(this.DamID!=null) {
-                if (!heifersContext.IsBirthLactionNumberUnique((int)this.BirthLactationNumber, (long)this.DamID))
+                if(type=="Update" || type == "Edit")
+                {
+                    if (!heifersContext.IsBirthLactionNumberUnique((int)this.BirthLactationNumber, (long)this.DamID, this.Id))
+                    {
+                        errors.Add("birthLactationNumber", "BirthLactationNumber Occupied");
+                        error = false;
+                    }
+                }
+                else if (!heifersContext.IsBirthLactionNumberUnique((int)this.BirthLactationNumber, (long)this.DamID))
                 {
                     errors.Add("birthLactationNumber", "BirthLactationNumber Occupied");
                     error = false;
