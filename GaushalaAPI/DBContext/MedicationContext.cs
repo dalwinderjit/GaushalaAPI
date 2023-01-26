@@ -1,4 +1,5 @@
-﻿using GaushalaAPI.Models;
+﻿using GaushalaAPI.Helpers;
+using GaushalaAPI.Models;
 using GaushalAPI.Models;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -8,10 +9,10 @@ using System.Data.SqlClient;
 
 namespace GaushalaAPI.DBContext
 {
-    public class MedicationContext 
+    public class MedicationContext : BaseContext
     {
         private readonly IConfiguration _configuration;
-        public MedicationContext(IConfiguration configuration)
+        public MedicationContext(IConfiguration configuration) : base(configuration)
         {
             _configuration = configuration;
         }
@@ -22,53 +23,53 @@ namespace GaushalaAPI.DBContext
             
             if (medication.ValidateMedication("Add") == true)
             {
-                string query = "Insert into Medication (Date,AnimalID,Disease,Symptoms,Diagnosis,Prognosis,Treatment,Result,CostofTreatment2,Remarks) OUTPUT INSERTED.ID Values"+
-                "(@Date,@AnimalID,@Disease,@Symptoms,@Diagnosis,@Prognosis,@Treatment,@Result,@CostofTreatment2,@Remarks)";
+                if (medication.AnimalIDs == null)
+                {
+                    medication.AnimalIDs = new List<long>();
+                    medication.AnimalIDs.Add((long)medication.AnimalID);
+                }else if (medication.AnimalIDs.Count == 0)
+                {
+                    medication.AnimalIDs.Add((long)medication.AnimalID);
+                }
+                string query = "";// "Insert into Medication (Date,AnimalID,Disease,Symptoms,Diagnosis,Prognosis,Treatment,Result,CostofTreatment2,Remarks) OUTPUT INSERTED.ID Values"+
+                //"(@Date,@AnimalID,@Disease,@Symptoms,@Diagnosis,@Prognosis,@Treatment,@Result,@CostofTreatment2,@Remarks)";
+                query = this.GenerateInsertMedicationSqlQuery(medication);
                 Console.WriteLine(query);
                 string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     SqlCommand sqlcmd = new SqlCommand(query, conn);
-                    sqlcmd.Parameters.Add("@Date", System.Data.SqlDbType.DateTime);
-                    sqlcmd.Parameters["@Date"].Value = medication.Date;
-                    sqlcmd.Parameters.Add("@AnimalID", System.Data.SqlDbType.BigInt);
-                    sqlcmd.Parameters["@AnimalID"].Value =medication.AnimalID;
-                    sqlcmd.Parameters.Add("@Disease", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Disease"].Value = medication.Disease;
-                    sqlcmd.Parameters.Add("@Symptoms", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Symptoms"].Value = medication.Symptoms;
-                    sqlcmd.Parameters.Add("@Diagnosis", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Diagnosis"].Value = medication.Diagnosis;
-                    sqlcmd.Parameters.Add("@Treatment", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Treatment"].Value = medication.Treatment;
-                    sqlcmd.Parameters.Add("@Prognosis", System.Data.SqlDbType.Int);
-                    sqlcmd.Parameters["@Prognosis"].Value = medication.Prognosis;
-                    sqlcmd.Parameters.Add("@Result", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Result"].Value = medication.Result;
-                    sqlcmd.Parameters.Add("@CostofTreatment2", System.Data.SqlDbType.Decimal);
-                    sqlcmd.Parameters["@CostofTreatment2"].Value = medication.CostOfTreatment2;
-                    sqlcmd.Parameters.Add("@Remarks", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Remarks"].Value = medication.Remarks;
-
-                    //sqlcmd.Parameters.Add("@category", System.Data.SqlDbType.VarChar);
-                    //sqlcmd.Parameters["@category"].Value = cow.Category;
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Date), medication.Date, "Date", System.Data.SqlDbType.DateTime);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.AnimalID), medication.AnimalID, "AnimalID", System.Data.SqlDbType.BigInt);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Disease), medication.Disease, "Disease", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Symptoms), medication.Symptoms, "Symptoms", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Diagnosis), medication.Diagnosis, "Diagnosis", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Treatment), medication.Treatment, "Treatment", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Prognosis), medication.Prognosis, "Prognosis", System.Data.SqlDbType.Int);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Result), medication.Result, "Result", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.CostOfTreatment2), medication.CostOfTreatment2, "CostofTreatment2", System.Data.SqlDbType.Decimal);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Remarks), medication.Remarks, "Remarks", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.DiseaseID), medication.DiseaseID, "DiseaseID", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.VaccinationID), medication.VaccinationID, "VaccinationID", System.Data.SqlDbType.BigInt);
                     SqlTransaction tran = null;
                     try
                     {
-                        
                         conn.Open();
                         tran = conn.BeginTransaction("Medication");
                         tran.Save("save1");
                         sqlcmd.Transaction = tran;
                         medication.Id = (Int64)sqlcmd.ExecuteScalar();
                         Dictionary<string,object> mediDocData= this.AddMedicationDoctors(medication.Id,medication.DoctorIDs,conn,tran);
+                        Dictionary<string, object> mediAniData = this.AddMedicationAnimals(medication.Id, medication.AnimalIDs, conn, tran);
                         Dictionary<string, string> mediDocData_ = (Dictionary<string, string>)mediDocData["data"];
-                        if(mediDocData_["status"]=="success"){
+                        Dictionary<string, string> mediAniData_ = (Dictionary<string, string>)mediAniData["data"];
+                        if(mediDocData_["status"] == "success" && mediAniData_["status"].ToString() == "success")
+                        {
                             if(medication.Id >0){
                                 Dictionary<string, string> data2 = new Dictionary<string, string>();
                                 tran.Commit();
                                 Console.WriteLine("Commiting");
-                                data2["message"] = "Cow Medication Data Saved Successfully."+mediDocData_["message"];
+                                data2["message"] = "Cow Medication Data Saved Successfully! "+mediDocData_["message"] +"! " + mediAniData_["message"];
                                 data2["status"] = "success";
                                 data["data"] = data2;
                             }else
@@ -86,13 +87,14 @@ namespace GaushalaAPI.DBContext
                             tran.Rollback();
                             Console.WriteLine("rolling back second");
                             Dictionary<string, string> data2 = new Dictionary<string, string>();
-                            data2["message"] = "Cow Medication Date Saving Failed";
+                            data2["message"] = "Cow Medication Date Saving Failed"+mediDocData["message"]+mediAniData["message"];
                             data2["status"] = "failure";
                             data["data"] = data2;
                         }
                     }catch(Exception e)
                     {
                         Console.WriteLine("Exception : "+e.Message);
+                        Console.WriteLine("Exception : "+e.StackTrace);
                     }
                     
                 }
@@ -108,7 +110,25 @@ namespace GaushalaAPI.DBContext
             return data;
             
         }
-
+        public string GenerateInsertMedicationSqlQuery(MedicationModel medi)
+        {
+            string addQuery = "";
+            string cols = "";
+            string params_ = "";
+            this.addColToQuery(!Validations.IsNullOrEmpty(medi.Date), ref cols, ref params_, "Date");
+            this.addColToQuery(!Validations.IsNullOrEmpty(medi.AnimalID), ref cols, ref params_, "AnimalID");
+            this.addColToQuery(!Validations.IsNullOrEmpty(medi.Disease), ref cols, ref params_, "Disease");
+            this.addColToQuery(!Validations.IsNullOrEmpty(medi.DiseaseID), ref cols, ref params_, "DiseaseID");
+            this.addColToQuery(!Validations.IsNullOrEmpty(medi.Symptoms), ref cols, ref params_, "Symptoms");
+            this.addColToQuery(!Validations.IsNullOrEmpty(medi.Diagnosis), ref cols, ref params_, "Diagnosis");
+            this.addColToQuery(!Validations.IsNullOrEmpty(medi.Prognosis), ref cols, ref params_, "Prognosis");
+            this.addColToQuery(!Validations.IsNullOrEmpty(medi.Treatment), ref cols, ref params_, "Treatment");
+            this.addColToQuery(!Validations.IsNullOrEmpty(medi.Result), ref cols, ref params_, "Result");
+            this.addColToQuery(!Validations.IsNullOrEmpty(medi.Remarks), ref cols, ref params_, "Remarks");
+            this.addColToQuery(!Validations.IsNullOrEmpty(medi.VaccinationID), ref cols, ref params_, "VaccinationID");
+            addQuery = $"INSERT into [dbo].[Medication] ({cols}) OUTPUT INSERTED.ID values({params_});";
+            return addQuery;
+        }
         internal Dictionary<string, object> EditMedicationDetail(MedicationModel medication)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
@@ -518,6 +538,92 @@ namespace GaushalaAPI.DBContext
                 {
                     Dictionary<string, string> data2 = new Dictionary<string, string>();
                     data2["message"] = "Adding Medication Doctors Failed! Invaid Data Enterred";
+                    data2["status"] = "failure";
+                    data["data"] = data2;
+                }
+            }
+            return data;
+        }
+        public Dictionary<string, object> AddMedicationAnimals(long? id, List<long> animalIDs, SqlConnection conn2 = null, SqlTransaction tran = null)
+        {
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            if (true)
+            {
+                string query = "";
+                SqlConnection conn = null;
+                if (conn2 == null)
+                {
+                    string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+                    conn = new SqlConnection(connectionString);
+                }
+                else
+                {
+                    conn = conn2;
+                }
+                if (true)
+                {
+
+                    string values = "";
+                    SqlCommand sqlcmd = new SqlCommand();
+                    sqlcmd.Connection = conn;
+                    try
+                    {
+                        if (conn2 == null)
+                        {
+                            conn.Open();
+                        }
+                        int i = 0;
+                        foreach (var m in animalIDs)
+                        {
+                            if (values != "")
+                            {
+                                values += ",";
+                            }
+                            values += $"(@MedicationID{i},@AnimalID{i})";
+                            i++;
+                        }
+                        query = $"Insert into MedicationAnimalIDs (MedicationID,AnimalID) values {values}";
+                        Console.WriteLine(query);
+                        sqlcmd.CommandText = query;
+                        i = 0;
+                        foreach (var m in animalIDs)
+                        {
+                            sqlcmd.Parameters.Add($"@MedicationID{i}", System.Data.SqlDbType.BigInt);
+                            sqlcmd.Parameters[$"@MedicationID{i}"].Value = id;
+                            sqlcmd.Parameters.Add($"@AnimalID{i}", System.Data.SqlDbType.BigInt);
+                            sqlcmd.Parameters[$"@AnimalID{i}"].Value = (long)m;
+                            i++;
+                        }
+                        if (tran != null)
+                        {
+                            tran.Save("addMedicationAnimals");
+                            sqlcmd.Transaction = tran;
+                        }
+                        int j = sqlcmd.ExecuteNonQuery();
+                        if (j > 0)
+                        {
+                            Dictionary<string, string> data2 = new Dictionary<string, string>();
+                            data2["message"] = "Animals Added Successfully to medication";
+                            data2["status"] = "success";
+                            data["data"] = data2;
+                        }
+                        else
+                        {
+                            Dictionary<string, string> data2 = new Dictionary<string, string>();
+                            data2["message"] = "Animals Addition Failed Medication";
+                            data2["status"] = "failure";
+                            data["data"] = data2;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Exception : " + e.Message);
+                    }
+                }
+                else
+                {
+                    Dictionary<string, string> data2 = new Dictionary<string, string>();
+                    data2["message"] = "Adding Animals to Medication Failed! Invaid Data Enterred";
                     data2["status"] = "failure";
                     data["data"] = data2;
                 }

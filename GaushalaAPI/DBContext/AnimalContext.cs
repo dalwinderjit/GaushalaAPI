@@ -10,37 +10,14 @@ using GaushalaAPI.Helpers;
 
 namespace GaushalaAPI.DBContext
 {
-    public class AnimalContext 
+    public class AnimalContext : BaseContext
     {
         protected readonly IConfiguration _configuration;
         private SqlConnection conn;
-        public AnimalContext(IConfiguration configuration)
+        public AnimalContext(IConfiguration configuration):base(configuration)
         {
             _configuration = configuration;
         }
-        /*public List<Dictionary<string,object>> GetAnimalsIDNameTagNoPair(AnimalFilter animalFilter){
-            SqlDataReader sqlrdr = this.GetAnimals(animalFilter);
-            List<Dictionary<string,object>> AnimalsList_ = new List<Dictionary<string,object>>();
-            int counter = animalFilter.GetStart();
-            while (sqlrdr.Read())
-            {
-                Console.WriteLine("HELLO");
-                Dictionary<string, object> animal = new Dictionary<string, object>();
-                
-                animal["id"] = sqlrdr["Id"];
-                animal["tagNoName"] = sqlrdr["TagNo"].ToString() + " - "+sqlrdr["Name"].ToString();
-                //animal["name"] = sqlrdr["Name"].ToString();
-                //animal["dob"] = Helper.FormatDate(sqlrdr["DOB"]) ;
-                //animal["breed"] = sqlrdr["Breed"].ToString();
-                //animal["weight"] = sqlrdr["Weight"].ToString();
-                //animal["colour"] = sqlrdr["Colour"].ToString();
-                AnimalsList_.Add(animal);
-                counter++;
-            }
-            sqlrdr.Close();
-            conn.Close();
-            return AnimalsList_;
-        }*/
         public Dictionary<long,object> GetAnimalsIDNameTagNoPair(AnimalFilter animalFilter)
         {
             Dictionary<long,object> AnimalsList_ = new Dictionary<long,object>();
@@ -403,22 +380,6 @@ namespace GaushalaAPI.DBContext
             }
             return UpdateQuery;
         }
-        public void addColToQuery(bool add,ref string cols,ref string params_,string colName)
-        {
-            if (add==true)
-            {
-                if (cols.Trim() != "")
-                {
-                    cols += ",";
-                }
-                cols += $"[{colName}]";
-                if (params_.Trim() != "")
-                {
-                    params_ += ",";
-                }
-                params_ += $"@{colName}";
-            }
-        }
         public void addColToUpdateQuery(bool add, ref string cols, string colName)
         {
             if (add == true)
@@ -564,14 +525,7 @@ namespace GaushalaAPI.DBContext
             }
             return sqlcmd;
         }
-        public void AddColToSqlCommand(ref SqlCommand sqlcmd,bool add,object value, string colName, System.Data.SqlDbType type)
-        {
-            if (add == true)
-            {
-                sqlcmd.Parameters.Add($"@{colName}", type);
-                sqlcmd.Parameters[$"@{colName}"].Value = value;
-            }
-        }
+        
         internal Dictionary<string,object> AddAnimal(AnimalModel ani,bool addDam, bool addSire,SqlConnection? conn2=null,SqlTransaction? tran=null)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
@@ -1074,6 +1028,136 @@ namespace GaushalaAPI.DBContext
                 return false;
             }
         }
+        public Dictionary<string, object> GetAnimalById(long id,AnimalFilter ani, bool fetchConceiveData=false)
+        {
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            Dictionary<string, object> HeiferDetail = new Dictionary<string, object>();
+            CowModel cowModel = null;
+            string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "";
+                string select_cols = "";
+                string join = "";
+                string where = "";
+                if (fetchConceiveData == true)
+                {
+                    select_cols = "Animals.*,CowConceiveData.Id as conceiveId,CowConceiveData.DateOfService,CowConceiveData.DeliveryDate,CowConceiveData.DeliveryStatus,CowConceiveData.PregnancyStatus as PregnancyStatus_," +
+                        "CowConceiveData.DamWeight,CowConceiveData.MatingProcessType,CowConceiveData.BirthWeight,CowConceiveData.Remarks,CowConceiveData.DoctorID";
+                    join = "left Join CowConceiveData on CowConceiveData.AnimalId = Animals.Id";
+                    //where = "where Animals.Id= @Id";
+                }
+                else
+                {
+                    select_cols = "Animals.*";
+                    join = "";
+                    //where = "where Animals.Id= @Id";
+                }
+                where = this.GenerateWhereClause(ani);
+                query = $"Select {select_cols} from Animals {join} {where}";
+                
+                Console.WriteLine(query);
+                SqlCommand sqlcmd = new SqlCommand(query, conn);
+                this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Id), ani.Id, "Id", System.Data.SqlDbType.BigInt);
+                this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Category), ani.Category, "Category", System.Data.SqlDbType.VarChar);
+                Console.WriteLine(ani.Id);
+                /*sqlcmd.Parameters.Add("@ID", System.Data.SqlDbType.Int);
+                sqlcmd.Parameters["@ID"].Value = id;*/
+                try
+                {
+                    CowsContext cow_context = new CowsContext(this._configuration);
+                    conn.Open();
+                    SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
+                    if (sqlrdr.Read())
+                    {
+                        Dictionary<string, string> cowData = cow_context.GetCowTagNoNameById(Convert.ToInt64(sqlrdr["DamID"]));
+                        Dictionary<string, string> bullData = cow_context.GetCowTagNoNameById(Convert.ToInt64(sqlrdr["SireID"]));
+                        string cowName = cowData["name"];
+                        string TagNo = cowData["tagNo"];
+                        if (fetchConceiveData == true)
+                        {
+                            HeiferDetail["conceiveId"] = Helper.IsNullOrEmpty(sqlrdr["conceiveId"]);
+                            HeiferDetail["dateOfService"] = Helper.IsNullOrEmpty(sqlrdr["DateOfService"]);
+                            HeiferDetail["pregnancyStatus"] = Helper.IsNullOrEmpty(sqlrdr["PregnancyStatus_"]);
+                            HeiferDetail["deliveryStatus"] = Helper.IsNullOrEmpty(sqlrdr["DeliveryStatus"]);
+                            HeiferDetail["deliveryDate"] = Helper.IsNullOrEmpty(sqlrdr["DeliveryDate"]);
+                            HeiferDetail["birthWeight"] = Helper.IsNullOrEmpty(sqlrdr["BirthWeight"]);
+                            HeiferDetail["birthHeight"] = Helper.IsNullOrEmpty(sqlrdr["Height"]);
+                            HeiferDetail["damWeight"] = Helper.IsNullOrEmpty(sqlrdr["DamWeight"]);
+                            HeiferDetail["doctorID"] = Helper.IsNullOrEmpty(sqlrdr["DoctorID"]);
+                            HeiferDetail["matingProcessType"] = Helper.IsNullOrEmpty(sqlrdr["MatingProcessType"]);
+                        }
+
+                        HeiferDetail["id"] = Helper.IsNullOrEmpty(sqlrdr["Id"]);
+                        HeiferDetail["damID"] = Helper.IsNullOrEmpty(sqlrdr["DamID"]);
+                        HeiferDetail["sireID"] = Helper.IsNullOrEmpty(sqlrdr["SireID"]);
+                        HeiferDetail["cowName"] = Helper.IsNullOrEmpty(cowData["name"]);
+                        HeiferDetail["cowTagNo"] = Helper.IsNullOrEmpty(cowData["tagNo"]);
+                        HeiferDetail["bullsName"] = Helper.IsNullOrEmpty(bullData["name"]);
+                        HeiferDetail["bullsTagNo"] = Helper.IsNullOrEmpty(bullData["tagNo"]);
+                        HeiferDetail["birthLactationNumber"] = Helper.IsNullOrEmpty(sqlrdr["BirthLactationNumber"]);
+                        HeiferDetail["DOB"] = Helper.IsNullOrEmpty(sqlrdr["DOB"]);
+                        HeiferDetail["tagNo"] = Helper.IsNullOrEmpty(sqlrdr["TagNo"]);
+                        HeiferDetail["name"] = Helper.IsNullOrEmpty(sqlrdr["Name"]);
+                        HeiferDetail["colour"] = Helper.IsNullOrEmpty(sqlrdr["Colour"]);
+                        HeiferDetail["breed"] = Helper.IsNullOrEmpty(sqlrdr["Breed"]);
+                        HeiferDetail["gender"] = Helper.IsNullOrEmpty(sqlrdr["Gender"]);
+                        HeiferDetail["remarks"] = Helper.IsNullOrEmpty(sqlrdr["Remarks"]);
+                        HeiferDetail["picture"] = Helper.IsNullOrEmpty(sqlrdr["Picture"]);
+                        HeiferDetail["location"] = Helper.IsNullOrEmpty(sqlrdr["Location"]);
+                        data["status"] = "success";
+                        data["data"] = HeiferDetail;
+                        data["message"] = "Heifer Detail Exists";
+                        if (HeiferDetail["doctorID"].ToString().Trim() != "")
+                        {
+                            UsersContext users = new UsersContext(this._configuration);
+                            List<long> doctor_ids = new List<long>();
+                            doctor_ids.Add(Convert.ToInt64(HeiferDetail["doctorID"]));
+                            Dictionary<long, string> doctorsIdName = users.GetDoctorsIdNameByIds(doctor_ids);
+                            try
+                            {
+                                HeiferDetail["doctorsName"] = doctorsIdName[Convert.ToInt64(HeiferDetail["doctorID"])];
+                            }
+                            catch (Exception e)
+                            {
+                                HeiferDetail["doctorsName"] = "";
+                            }
+                        }
+                        else
+                        {
+                            HeiferDetail["doctorsName"] = "";
+                        }
+
+                    }
+                    sqlrdr.Close();
+                    conn.Close();
+                    return data;
+                }
+                catch (Exception ex)
+                {
+                    data["status"] = "failure";
+                    data["message"] = "Heifer Detail Do not Exists" + ex.StackTrace;
+                    return data;
+                }
+            }
+        }
+
+        private string GenerateWhereClause(AnimalFilter ani)
+        {
+            string where = "";
+            base.AddToWhereClause(!Validations.IsNullOrEmpty(ani.Id), ani.Id, ref where, "Animals.Id","Id","=","");
+            base.AddToWhereClause(!Validations.IsNullOrEmpty(ani.Category), ani.Category, ref where, "Category","Category","like","and");
+            /*if (Validations.IsNullOrEmpty(ani.Id) == false) {
+                if (where != "") { where += ","; }
+                where = "Id = @Id";
+            }*/
+            if(where != "")
+            {
+                where = "where " + where;
+            }
+            return where;
+        }
+        
         /*
         internal int GetTotalFilteredAnimals(AnimalFilter animalFilters)
         {

@@ -15,8 +15,10 @@ namespace GaushalaAPI.Models
         public long? Id { get; set; }
         public DateTime? Date { get;set;}
         public long? AnimalID { get; set; } 
+        public long? VaccinationID { get; set; } 
         public string? AnimalNo { get; set; } 
         public string? Disease { get; set; } 
+        public long? DiseaseID { get; set; } 
         public string? Symptoms { get; set; } 
         public string? Diagnosis { get; set; }
         public string? Treatment { get; set; }
@@ -26,15 +28,30 @@ namespace GaushalaAPI.Models
         public string? Remarks { get; set; } 
         public decimal? CostOfTreatment2{ get; set; } 
         public string? DoctorDetail { get; set; } 
-        public List<long>? DoctorIDs { get; set; } 
+        public List<long>? DoctorIDs { get; set; }
+        public List<long>? AnimalIDs { get; set; }
         public Dictionary<long,Dictionary<string,object>>? Doctors { get; set; }
         
         public MedicationModel()
         {
 
         }
-        
-        public bool ValidateMedication(string type = "Add")
+        public bool ValidateVaccination(string type = "Add",string type2="Vaccination") {
+            bool error = true;
+            error = this.ValidateMedication(type,type2);
+            if (this.VaccinationID == null)
+            {
+                errors.Add("VaccinationID", "Please Select the Vaccination");
+                error = false;
+            }
+            if (this.AnimalIDs == null)
+            {
+                errors.Add("AnimalIDs", "Please select the Animals");
+                error = false;
+            }
+            return error;
+        }
+        public bool ValidateMedication(string type = "Add",string type2="Medication")
         {
             bool error = true;
             errors = new Dictionary<string, string>();
@@ -50,15 +67,28 @@ namespace GaushalaAPI.Models
                 errors.Add("Date", "Enter the Date of Medication");
                 error = false;
             }
-            if (this.AnimalID == null)
+            if (type2 == "Medication")
             {
-                errors.Add("AnimalID", "Please select the Animal");
-                error = false;
+                if (this.AnimalID == null)
+                {
+                    errors.Add("AnimalID", "Please select the Animal");
+                    error = false;
+                }
             }
-            if (this.Disease == null)
+            /*if (this.Disease == null)
             {
                 errors.Add("Disease", "Please enter the Disease");
                 error = false;
+            }*/
+            if (this.DiseaseID == null)
+            {
+                errors.Add("DiseaseID", "Please select the Disease");
+                error = false;
+                if (this.DiseaseID == 1)    //other id
+                {
+                    errors.Add("Disease", "Please enter the Other Disease");
+                    error = false;
+                }
             }
             if (this.Symptoms == null)
             {
@@ -67,7 +97,7 @@ namespace GaushalaAPI.Models
             }
             if (this.Diagnosis == null)
             {
-                errors.Add("Diagnosis", "Please enter the Symptoms");
+                errors.Add("Diagnosis", "Please enter the Diagnosis");
                 error = false;
             }
             if (this.Treatment == null)

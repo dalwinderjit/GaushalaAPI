@@ -66,10 +66,10 @@ namespace GaushalaAPI.Controllers
             }
         }
         [HttpPost]
-        public HeiferModel GetHeiferById(long id)
+        public Dictionary<string,object> GetHeiferById(long id)
         {
-            heifersContext.GetHeiferDetailById(id);
-            return new HeiferModel();
+            return heifersContext.GetHeiferDetailById(id);
+            //return new HeiferModel();
         }
     }
 }
