@@ -1238,19 +1238,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\OMR-PAP\\.nuget\\packages\\": {}
+    "C:\\Users\\hp\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\dalwinder\\projects\\djjs-gaushala\\soruce-code\\mainCode\\GaushalaAPI\\GaushalaAPI\\GaushalaAPI.csproj",
+      "projectUniqueName": "F:\\PROJECTS\\djjs-gaushala\\soruce-code\\main\\GaushalaAPI\\GaushalaAPI\\GaushalaAPI.csproj",
       "projectName": "GaushalaAPI",
-      "projectPath": "D:\\dalwinder\\projects\\djjs-gaushala\\soruce-code\\mainCode\\GaushalaAPI\\GaushalaAPI\\GaushalaAPI.csproj",
-      "packagesPath": "C:\\Users\\OMR-PAP\\.nuget\\packages\\",
-      "outputPath": "D:\\dalwinder\\projects\\djjs-gaushala\\soruce-code\\mainCode\\GaushalaAPI\\GaushalaAPI\\obj\\",
+      "projectPath": "F:\\PROJECTS\\djjs-gaushala\\soruce-code\\main\\GaushalaAPI\\GaushalaAPI\\GaushalaAPI.csproj",
+      "packagesPath": "C:\\Users\\hp\\.nuget\\packages\\",
+      "outputPath": "F:\\PROJECTS\\djjs-gaushala\\soruce-code\\main\\GaushalaAPI\\GaushalaAPI\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\OMR-PAP\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\hp\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -1303,6 +1303,12 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[5.0.12, 5.0.12]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -1311,7 +1317,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.203\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.100\\RuntimeIdentifierGraph.json"
       }
     }
   }

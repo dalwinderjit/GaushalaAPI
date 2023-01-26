@@ -1,6 +1,5 @@
 ﻿using GaushalaAPI.Helpers;
 using GaushalaAPI.Models;
-using GaushalAPI.Models;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections;
@@ -135,54 +134,48 @@ namespace GaushalaAPI.DBContext
 
             if (medication.ValidateMedication("Edit") == true)
             {
-                string query = "UPdate Medication set Date = @Date,AnimalID = @AnimalID,Disease = @Disease,Symptoms = @Symptoms,Diagnosis = @Diagnosis," +
-                    "Prognosis = @Prognosis,Treatment = @Treatment,Result = @Result,CostofTreatment2 = @CostofTreatment2,Remarks = @Remarks  where Id = @Id";
+                /*string query = "UPdate Medication set Date = @Date,AnimalID = @AnimalID,Disease = @Disease,Symptoms = @Symptoms,Diagnosis = @Diagnosis," +
+                    "Prognosis = @Prognosis,Treatment = @Treatment,Result = @Result,CostofTreatment2 = @CostofTreatment2,Remarks = @Remarks  where Id = @Id";*/
+                string query = this.GenerateUpdateAnimalSqlQuery(medication);
                 Console.WriteLine(query);
                 string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     SqlCommand sqlcmd = new SqlCommand(query, conn);
-                    sqlcmd.Parameters.Add("@Id", System.Data.SqlDbType.BigInt);
-                    sqlcmd.Parameters["@Id"].Value = medication.Id;
-                    sqlcmd.Parameters.Add("@Date", System.Data.SqlDbType.DateTime);
-                    sqlcmd.Parameters["@Date"].Value = medication.Date;
-                    sqlcmd.Parameters.Add("@AnimalID", System.Data.SqlDbType.BigInt);
-                    sqlcmd.Parameters["@AnimalID"].Value = medication.AnimalID;
-                    sqlcmd.Parameters.Add("@Disease", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Disease"].Value = medication.Disease;
-                    sqlcmd.Parameters.Add("@Symptoms", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Symptoms"].Value = medication.Symptoms;
-                    sqlcmd.Parameters.Add("@Diagnosis", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Diagnosis"].Value = medication.Diagnosis;
-                    sqlcmd.Parameters.Add("@Treatment", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Treatment"].Value = medication.Treatment;
-                    sqlcmd.Parameters.Add("@Prognosis", System.Data.SqlDbType.Int);
-                    sqlcmd.Parameters["@Prognosis"].Value = medication.Prognosis;
-                    sqlcmd.Parameters.Add("@Result", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Result"].Value = medication.Result;
-                    sqlcmd.Parameters.Add("@CostofTreatment2", System.Data.SqlDbType.Decimal);
-                    sqlcmd.Parameters["@CostofTreatment2"].Value = medication.CostOfTreatment2;
-                    sqlcmd.Parameters.Add("@Remarks", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Remarks"].Value = medication.Remarks;
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Id), medication.Id, "Id", System.Data.SqlDbType.BigInt);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Date), medication.Date, "Date", System.Data.SqlDbType.DateTime);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.AnimalID), medication.AnimalID, "AnimalID", System.Data.SqlDbType.BigInt);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Disease), medication.Disease, "Disease", System.Data.SqlDbType.BigInt);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Symptoms), medication.Symptoms, "Symptoms", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Diagnosis), medication.Diagnosis, "Diagnosis", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Treatment), medication.Treatment, "Treatment", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Prognosis), medication.Prognosis, "Prognosis", System.Data.SqlDbType.Int);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Result), medication.Result, "Result", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.CostOfTreatment2), medication.CostOfTreatment2, "CostofTreatment2", System.Data.SqlDbType.Decimal);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Remarks), medication.Remarks, "Remarks", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.DiseaseID), medication.DiseaseID, "DiseaseID", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.VaccinationID), medication.VaccinationID, "VaccinationID", System.Data.SqlDbType.BigInt);
+
                     SqlTransaction tran = null;
                     try
                     {
-
                         conn.Open();
                         tran = conn.BeginTransaction("Medication");
                         tran.Save("save1");
                         sqlcmd.Transaction = tran;
                         int i = sqlcmd.ExecuteNonQuery();
                         Dictionary<string, object> mediDocData = this.UpdateMedicationDoctors(medication.Id, medication.DoctorIDs,conn,tran);
+                        Dictionary<string, object> mediAniData = this.UpdateMedicationAnimalIDs(medication.Id, medication.AnimalIDs,conn,tran);
                         Dictionary<string, string> mediDocData_ = (Dictionary<string, string>)mediDocData["data"];
-                        if (mediDocData_["status"] == "success")
+                        Dictionary<string, string> mediAniData_ = (Dictionary<string, string>)mediAniData["data"];
+                        if (mediDocData_["status"] == "success" && mediAniData_["status"] == "success")
                         {
                             if (i > 0)
                             {
                                 Dictionary<string, string> data2 = new Dictionary<string, string>();
                                 tran.Commit();
                                 Console.WriteLine("Commiting");
-                                data2["message"] = "Cow Medication Data Saved Successfully." + mediDocData_["message"];
+                                data2["message"] = "Cow Medication Data Saved Successfully." + mediDocData_["message"] + mediAniData_["message"];
                                 data2["status"] = "success";
                                 data["data"] = data2;
                             }
@@ -191,7 +184,7 @@ namespace GaushalaAPI.DBContext
                                 tran.Rollback();
                                 Console.WriteLine("rolling back");
                                 Dictionary<string, string> data2 = new Dictionary<string, string>();
-                                data2["message"] = "Cow Medication Date Saving Failed";
+                                data2["message"] = "Cow Medication Date Updating Failed";
                                 data2["status"] = "failure";
                                 data["data"] = data2;
                             }
@@ -201,7 +194,7 @@ namespace GaushalaAPI.DBContext
                             tran.Rollback();
                             Console.WriteLine("rolling back second");
                             Dictionary<string, string> data2 = new Dictionary<string, string>();
-                            data2["message"] = "Cow Medication Date Saving Failed";
+                            data2["message"] = "Cow Medication Dat Saving Failed";
                             data2["status"] = "failure";
                             data["data"] = data2;
                         }
@@ -223,6 +216,177 @@ namespace GaushalaAPI.DBContext
             return data;
         }
 
+        private Dictionary<string, object> UpdateMedicationAnimalIDs(long? medication_id, List<long> newAnimalIds, SqlConnection conn2, SqlTransaction tran)
+        {
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            //get the old doctor ids
+            List<long> medication_ids = new List<long>();
+            medication_ids.Add((long)medication_id);
+            Dictionary<long, object> medication_data = MedicationContext.GetAnimalIdsByMedicationIDs2(this._configuration, medication_ids);
+            Dictionary<string, object> ani_data;
+            try
+            {
+                ani_data = (Dictionary<string, object>)medication_data[(long)medication_id];
+            }
+            catch (Exception e)
+            {
+                ani_data = new Dictionary<string, object>();
+                Console.WriteLine("No Data Found");
+                return data;
+            }
+
+            Dictionary<long, long> OldMedicationIds = (Dictionary<long, long>)ani_data["Relations"];
+            Dictionary<long, int> OldAnimalIds = (Dictionary<long, int>)ani_data["AniIDS"];
+
+
+            List<long> AlreadyAddedAnimalIds = new List<long>();
+            List<long> AnimalIdsToBeAdded = new List<long>();
+            List<long> AnimalIdsToBeDeleted = new List<long>();
+            List<long> AnimalIdsToBeRecovered = new List<long>();
+            foreach (long doc_id in newAnimalIds)
+            {
+                if (OldAnimalIds.ContainsKey(doc_id) == true)
+                {
+                    int deleted = 0;
+                    long med_id = 0;
+                    OldAnimalIds.TryGetValue(doc_id, out deleted);
+                    OldMedicationIds.TryGetValue(doc_id, out med_id);
+                    if (deleted == 0)
+                    {
+                        AlreadyAddedAnimalIds.Add(doc_id);
+                    }
+                    else if (deleted == 1)
+                    {
+                        if (med_id != 0)
+                        {
+                            AnimalIdsToBeRecovered.Add(med_id);
+                        }
+                    }
+                }
+                else
+                {
+                    AnimalIdsToBeAdded.Add(doc_id);
+                }
+            }
+            foreach (var doc_id in OldAnimalIds)
+            {
+                if (newAnimalIds.Contains(doc_id.Key) == false)
+                {
+                    if (doc_id.Value == 0)
+                    {
+                        long med_id = 0;
+                        OldMedicationIds.TryGetValue(doc_id.Key, out med_id);
+                        AnimalIdsToBeDeleted.Add(med_id);
+                    }
+                }
+            }
+            bool addData_ = true;
+            bool deleteData_ = true;
+            bool recoverData_ = true;
+            string id_message = "";
+            if (AnimalIdsToBeAdded.Count > 0)
+            {
+                Dictionary<string, object> addData = this.AddMedicationAnimals(medication_id, AnimalIdsToBeAdded, conn2, tran);
+                if (((Dictionary<string, string>)addData["data"])["status"] == "success")
+                {
+                    addData_ = true;
+                }
+                else
+                {
+                    addData_ = false;
+                    if (id_message != "")
+                    {
+                        id_message = ",";
+                    }
+                    id_message += ((Dictionary<string, string>)addData["data"])["message"];
+                }
+            }
+            else
+            {
+                addData_ = true;
+            }
+            if (AnimalIdsToBeDeleted.Count > 0)
+            {
+                Dictionary<string, object> deleteData = this.DeleteMedicationAnimals(medication_id, AnimalIdsToBeDeleted, conn2, tran);
+                if (((Dictionary<string, string>)deleteData["data"])["status"] == "success")
+                {
+                    deleteData_ = true;
+                }
+                else
+                {
+                    deleteData_ = false;
+                    if (id_message != "")
+                    {
+                        id_message = ",";
+                    }
+                    id_message += ((Dictionary<string, string>)deleteData["data"])["message"];
+                }
+            }
+            else
+            {
+                deleteData_ = true;
+            }
+            //to be recovered
+            if (AnimalIdsToBeRecovered.Count > 0)
+            {
+                Dictionary<string, object> recoverData = this.RecoverMedicationAnimals(medication_id, AnimalIdsToBeRecovered, conn2, tran);
+                if (((Dictionary<string, string>)recoverData["data"])["status"] == "success")
+                {
+                    recoverData_ = true;
+                }
+                else
+                {
+                    recoverData_ = false;
+                    if (id_message != "")
+                    {
+                        id_message = ",";
+                    }
+                    id_message += ((Dictionary<string, string>)recoverData["data"])["message"];
+                }
+            }
+            if (addData_ == true && deleteData_ == true && recoverData_ == true)
+            {
+                Dictionary<string, string> data__ = new Dictionary<string, string>();
+                data__["message"] = "Animal IDs Updated Successfully";
+                data__["status"] = "success";
+                data["data"] = data__;
+            }
+            else
+            {
+                Dictionary<string, string> data__ = new Dictionary<string, string>();
+                data__["message"] = "Animal IDs Updation Failed.(" + id_message + ")";
+                data__["status"] = "failure";
+                data["data"] = data__;
+            }
+            return data;
+        }
+
+        public string GenerateUpdateAnimalSqlQuery(MedicationModel medi)
+        {
+            string UpdateQuery = "";
+            string cols = "";// "[Gender],[TagNo],[Name],[Breed],[Lactation],[DOB],[Colour],[Weight],[Height],[BirthLactationNumber],[PregnancyStatus],[Status],[ReproductiveStatus],[MilkingStatus],[Location]";
+            string where = "";
+            //Build Where Clause for Animal Filter ????
+            where = "where Id = @Id";
+
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(medi.Date), ref cols, "Date");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(medi.AnimalID), ref cols, "AnimalID");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(medi.Disease), ref cols, "Disease");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(medi.Symptoms), ref cols, "Symptoms");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(medi.Diagnosis), ref cols, "Diagnosis");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(medi.Prognosis), ref cols, "Prognosis");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(medi.Treatment), ref cols, "Treatment");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(medi.Result), ref cols, "Result");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(medi.CostOfTreatment2), ref cols, "CostofTreatment2");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(medi.Remarks), ref cols, "Remarks");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(medi.VaccinationID), ref cols, "VaccinationID");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(medi.DiseaseID), ref cols, "DiseaseID");
+            
+            UpdateQuery = $"UPDATE [dbo].[Medication] set {cols} {where};";
+            Console.WriteLine(UpdateQuery);
+            return UpdateQuery;
+                    
+        }
         private Dictionary<string, object> UpdateMedicationDoctors(long? medication_id, List<long> newDoctorIDs, SqlConnection conn2, SqlTransaction tran)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
@@ -630,7 +794,7 @@ namespace GaushalaAPI.DBContext
             }
             return data;
         }
-
+        
         public Dictionary<string, object> DeleteMedicationDoctors(long? medicationID, List<long> doctorIdsToBeDeleted, SqlConnection conn2 = null, SqlTransaction tran = null)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
@@ -720,7 +884,8 @@ namespace GaushalaAPI.DBContext
                 }
             }
             return data;
-        }public Dictionary<string, object> RecoverMedicationDoctors(long? medicationID, List<long> doctorIdsToBeRecovered, SqlConnection conn2 = null, SqlTransaction tran = null)
+        }
+        public Dictionary<string, object> RecoverMedicationDoctors(long? medicationID, List<long> doctorIdsToBeRecovered, SqlConnection conn2 = null, SqlTransaction tran = null)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             if (true)
@@ -1129,6 +1294,271 @@ namespace GaushalaAPI.DBContext
             //ret_data["DoctorIds"] = DoctorIds;
             //ret_data["MedicationIds"] = MedicationIds;
             return MedicationIDS;
+        }
+        public static Dictionary<long, object> GetAnimalIdsByMedicationIDs2(IConfiguration _configuration, List<long> med_ids)
+        {
+            Dictionary<string, object> ret_data = new Dictionary<string, object>();
+            Dictionary<long, List<long>> data = new Dictionary<long, List<long>>();
+            Dictionary<long, int> AnimalIds = new Dictionary<long, int>();
+            Dictionary<long, int> MedicationIds = new Dictionary<long, int>();
+            Dictionary<long, object> MedicationIDS = new Dictionary<long, object>();
+
+            string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+            string ids = "";
+            foreach (long m in med_ids)
+            {
+                if (ids != "")
+                {
+                    ids += ",";
+                }
+                ids += m.ToString();
+            }
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = $"select * from MedicationAnimalIds where MedicationID in ({ids})";
+
+                Console.WriteLine(query);
+                SqlCommand sqlcmd = new SqlCommand(query, conn);
+                try
+                {
+                    conn.Open();
+                    SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
+                    while (sqlrdr.Read())
+                    {
+                        List<long> data_;
+                        Dictionary<long, int> AniIDs_;
+                        Dictionary<long, long> Relations;
+                        Dictionary<string, object> data__;
+                        try
+                        {
+                            data__ = (Dictionary<string, object>)MedicationIDS[Convert.ToInt64(sqlrdr["MedicationID"])];
+                            AniIDs_ = (Dictionary<long, int>)data__["AniIDS"];
+                            Relations = (Dictionary<long, long>)data__["Relations"];
+                            //data_ = data[Convert.ToInt64(sqlrdr["MedicationID"])];
+                        }
+                        catch (Exception e)
+                        {
+                            data__ = new Dictionary<string, object>();
+                            AniIDs_ = new Dictionary<long, int>();
+                            Relations = new Dictionary<long, long>();
+                            //data_ = new List<long>();
+                        }
+                        //Console.WriteLine("deleted : "+ sqlrdr["Deleted"] + Convert.ToInt32(sqlrdr["Deleted"]));
+                        if (Convert.ToInt32(sqlrdr["Deleted"]) == 0 || Convert.ToInt32(sqlrdr["Deleted"]) == 1)
+                        {
+                            //data_.Add(Convert.ToInt64(sqlrdr["DoctorID"]));
+                            AniIDs_[Convert.ToInt64(sqlrdr["DoctorID"])] = Convert.ToInt32(sqlrdr["Deleted"]);
+                            Relations[Convert.ToInt64(sqlrdr["DoctorID"])] = Convert.ToInt64(sqlrdr["Id"]);
+                        }
+                        data__["AniIDS"] = AniIDs_;
+                        data__["Relations"] = Relations;
+                        MedicationIDS[Convert.ToInt64(sqlrdr["MedicationID"])] = data__;
+                        /*if (DoctorIds.ContainsKey((Convert.ToInt64(sqlrdr["DoctorID"]))) == false)
+                        {
+                            DoctorIds[Convert.ToInt64(sqlrdr["DoctorID"])] = Convert.ToInt32(sqlrdr["Deleted"]);
+                            
+                        }
+                        if (MedicationIds.ContainsKey((Convert.ToInt64(sqlrdr["DoctorID"]))) == false)
+                        {
+                            MedicationIds[Convert.ToInt64(sqlrdr["DoctorID"])] = Convert.ToInt32(sqlrdr["Id"]);
+                        }
+                        data[Convert.ToInt64(sqlrdr["MedicationID"])] = data_;*/
+                    }
+                    sqlrdr.Close();
+                    conn.Close();
+                    Console.WriteLine("COnnection closed");
+                    //Dictionary<long, Dictionary<long, long>> med_doc_ids_relation = this.GetDoctoreIdsByMedicationIDs(med_ids);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Falied sds" + ex.Message);
+                    Console.WriteLine(ex.StackTrace);
+                }
+            }
+            //ret_data["Relations"] = data;
+            //ret_data["DoctorIds"] = DoctorIds;
+            //ret_data["MedicationIds"] = MedicationIds;
+            return MedicationIDS;
+        }
+        public Dictionary<string, object> RecoverMedicationAnimals(long? medicationID, List<long> animalIdsToBeRecovered, SqlConnection conn2 = null, SqlTransaction tran = null)
+        {
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            if (true)
+            {
+                string query = "";
+                SqlConnection conn = null;
+                if (conn2 == null)
+                {
+                    string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+                    conn = new SqlConnection(connectionString);
+                }
+                else
+                {
+                    conn = conn2;
+                }
+                if (true)
+                {
+
+                    string values = "";
+                    SqlCommand sqlcmd = new SqlCommand();
+                    sqlcmd.Connection = conn;
+                    try
+                    {
+                        if (conn2 == null)
+                        {
+                            conn.Open();
+                        }
+                        int i = 0;
+                        foreach (long m in animalIdsToBeRecovered)
+                        {
+                            if (values != "")
+                            {
+                                values += ",";
+                            }
+                            values += $"@Id{i}";
+                            i++;
+                        }
+                        query = $"Update MedicationAnimalIDs set Deleted = 0 where Id in ({values}) and MedicationID = @MedicationID";
+                        Console.WriteLine(query);
+                        sqlcmd.CommandText = query;
+                        i = 0;
+                        foreach (long m in animalIdsToBeRecovered)
+                        {
+                            sqlcmd.Parameters.Add($"@Id{i}", System.Data.SqlDbType.BigInt);
+                            sqlcmd.Parameters[$"@Id{i}"].Value = m;
+                            Console.WriteLine("REC " + m);
+                            i++;
+                        }
+                        sqlcmd.Parameters.Add($"@MedicationID", System.Data.SqlDbType.BigInt);
+                        sqlcmd.Parameters[$"@MedicationID"].Value = medicationID;
+                        Console.WriteLine(medicationID);
+                        if (tran != null)
+                        {
+                            tran.Save("deleteMedicationanimals");
+                            sqlcmd.Transaction = tran;
+                        }
+                        int j = sqlcmd.ExecuteNonQuery();
+                        if (j > 0)
+                        {
+                            Console.WriteLine("Recovered Successful " + j);
+                            Dictionary<string, string> data2 = new Dictionary<string, string>();
+                            data2["message"] = "Animals Recovered Successfully from this medication";
+                            data2["status"] = "success";
+                            data["data"] = data2;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Recovered Failed " + j);
+                            Dictionary<string, string> data2 = new Dictionary<string, string>();
+                            data2["message"] = "Animal Recover Failed";
+                            data2["status"] = "failure";
+                            data["data"] = data2;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Exception : " + e.Message);
+                    }
+                }
+                else
+                {
+                    Dictionary<string, string> data2 = new Dictionary<string, string>();
+                    data2["message"] = "Animal Recover Failed";
+                    data2["status"] = "failure";
+                    data["data"] = data2;
+                }
+            }
+            return data;
+        }
+        public Dictionary<string, object> DeleteMedicationAnimals(long? medicationID, List<long> animalIdsToBeDeleted, SqlConnection conn2 = null, SqlTransaction tran = null)
+        {
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            if (true)
+            {
+                string query = "";
+                SqlConnection conn = null;
+                if (conn2 == null)
+                {
+                    string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+                    conn = new SqlConnection(connectionString);
+                }
+                else
+                {
+                    conn = conn2;
+                }
+                if (true)
+                {
+
+                    string values = "";
+                    SqlCommand sqlcmd = new SqlCommand();
+                    sqlcmd.Connection = conn;
+                    try
+                    {
+                        if (conn2 == null)
+                        {
+                            conn.Open();
+                        }
+                        int i = 0;
+                        foreach (long m in animalIdsToBeDeleted)
+                        {
+                            if (values != "")
+                            {
+                                values += ",";
+                            }
+                            values += $"@Id{i}";
+                            i++;
+                        }
+                        query = $"Update MedicationAnimalIDs set Deleted = 1 where Id in ({values}) and MedicationID = @MedicationID";
+                        Console.WriteLine(query);
+                        sqlcmd.CommandText = query;
+                        i = 0;
+                        foreach (long m in animalIdsToBeDeleted)
+                        {
+                            sqlcmd.Parameters.Add($"@Id{i}", System.Data.SqlDbType.BigInt);
+                            sqlcmd.Parameters[$"@Id{i}"].Value = m;
+                            Console.WriteLine("id del : " + m);
+                            i++;
+                        }
+                        sqlcmd.Parameters.Add($"@MedicationID", System.Data.SqlDbType.BigInt);
+                        sqlcmd.Parameters[$"@MedicationID"].Value = medicationID;
+                        Console.WriteLine("Medication ID " + medicationID);
+                        if (tran != null)
+                        {
+                            tran.Save("deleteMedicationAnimals");
+                            sqlcmd.Transaction = tran;
+                        }
+                        int j = sqlcmd.ExecuteNonQuery();
+                        if (j > 0)
+                        {
+                            Console.WriteLine("Delete successfullly " + j);
+                            Dictionary<string, string> data2 = new Dictionary<string, string>();
+                            data2["message"] = "Animals Deleted Successfully from this medication";
+                            data2["status"] = "success";
+                            data["data"] = data2;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Deletion Failed " + j);
+                            Dictionary<string, string> data2 = new Dictionary<string, string>();
+                            data2["message"] = "Animal Deletion Failed";
+                            data2["status"] = "failure";
+                            data["data"] = data2;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Exception : " + e.Message);
+                    }
+                }
+                else
+                {
+                    Dictionary<string, string> data2 = new Dictionary<string, string>();
+                    data2["message"] = "Animal Deletion Failed";
+                    data2["status"] = "failure";
+                    data["data"] = data2;
+                }
+            }
+            return data;
         }
     }
 }
