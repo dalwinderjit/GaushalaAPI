@@ -31,6 +31,7 @@ namespace GaushalaAPI.Models
         public List<long>? DoctorIDs { get; set; }
         public List<long>? AnimalIDs { get; set; }
         public Dictionary<long,Dictionary<string,object>>? Doctors { get; set; }
+        public Dictionary<long,Dictionary<string,object>>? Animals { get; set; }
         
         public MedicationModel()
         {
@@ -218,6 +219,7 @@ namespace GaushalaAPI.Models
             }
             catch (Exception e){}
             Doctors = new Dictionary<long,Dictionary<string, object>>();
+            Animals = new Dictionary<long,Dictionary<string, object>>();
         }
         static public Dictionary<string,object> GetFormatedMedication(MedicationModel medication)
         {
@@ -232,12 +234,14 @@ namespace GaushalaAPI.Models
             data["disease"] = medication.Disease.ToString();
             data["doctorDetail"] = medication.DoctorDetail.ToString();
             data["doctorIDs"] = medication.DoctorIDs;
+            data["animalIDs"] = medication.AnimalIDs;
             data["prognosis"] = medication.Prognosis;
             data["remarks"] = medication.Remarks.ToString();
             data["result"] = medication.Result.ToString();
             data["symptoms"] = medication.Symptoms.ToString();
             data["treatment"] = medication.Treatment.ToString();
             data["doctors"] = Helper.IsNullOrEmpty(medication.Doctors);
+            data["animals"] = Helper.IsNullOrEmpty(medication.Animals);
             data["errors"] = medication.errors;
             return data;
         }

@@ -8,6 +8,7 @@ namespace GaushalAPI.Entities
     public class AnimalFilter
     {
         public long? Id { get; set; }
+        public long[]? Ids { get; set; }
         public string? TagNo { get; set; }
         public string? Name { get; set; }
         public string? Category { get; set; }

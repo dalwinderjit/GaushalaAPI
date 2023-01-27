@@ -59,10 +59,15 @@ namespace GaushalaAPI.DBContext
             {
                 Console.WriteLine("HIE");
                 string where = "";
+                if(animalFilter.Ids !=null && animalFilter.Ids.Length > 0)
+                {
+                    if (where != "") { where += " and "; }
+                    where += $" Id in ({String.Join(',',animalFilter.Ids)})";
+                }
                 if (animalFilter.Name != null && animalFilter.Name !="")
                 {
                     if(where!=""){ where+=" and "; }
-                    where = $" Name like @Name ";
+                    where += $" Name like @Name ";
                 }
                 if (animalFilter.TagNo != null && animalFilter.TagNo !="")
                 {
@@ -89,10 +94,21 @@ namespace GaushalaAPI.DBContext
                 {
                     cols = String.Join(",", animalFilter.cols);
                 }
-                string query = $"Select {cols} from Animals where {where} {orderBy}  {offset}";
-                Console.Write(query);
+                if (where != "")
+                {
+                    where = " where " + where;
+                }
+                string query = $"Select {cols} from Animals {where} {orderBy}  {offset}";
+                Console.WriteLine(query);
                 SqlCommand sqlcmd = new SqlCommand(query, conn);
                 //SqlCommand sqlcmd = new SqlCommand("Update [dbo].[Animals] set [TagNo] = @tagNo,[Name] = @name,[Category] = @Category where [Animals].[Id] = @ID", conn);
+                if (animalFilter.Ids != null && animalFilter.Ids.Length > 0)
+                {
+                    //if (where != "") { where += " and "; }
+                    //where += $" Id in (@Ids)";
+                    //sqlcmd.Parameters.Add("@Ids", System.Data.SqlDbType.);
+                    //sqlcmd.Parameters["@Ids"].Value = animalFilter.Name;
+                }
                 if (animalFilter.Name != null && animalFilter.Name != "")
                 {
                     sqlcmd.Parameters.Add("@Name", System.Data.SqlDbType.VarChar);
@@ -662,6 +678,31 @@ namespace GaushalaAPI.DBContext
             //Console.WriteLine("returning data");
             return data;
         }
+
+        internal Dictionary<long, Dictionary<string, object>> GetAnimalsDataByIds(AnimalFilter animalFilter, List<long> animalsIDs)
+        {
+            if (animalsIDs.Count > 0)
+            {
+                animalFilter.Ids = new long[animalsIDs.Count];
+                for(int i = 0; i < animalsIDs.Count; i++)
+                {
+                    animalFilter.Ids[i] = animalsIDs[i];
+                }
+            }
+            List<Dictionary<string,object>> data =  this.GetAnimals(animalFilter);
+
+            Dictionary<long, Dictionary<string, object>> data2 = new Dictionary<long, Dictionary<string, object>>();
+            for(int i = 0; i < data.Count; i++)
+            {
+                Dictionary<string, object> dd = data[i];
+                data2[(long)dd["Id"]] = dd;
+            }
+            return data2;
+
+
+            //throw new NotImplementedException();
+        }
+
         internal Dictionary<string,object> UpdateAnimal(AnimalModel ani,bool addDam, bool addSire,SqlConnection? conn2=null,SqlTransaction? tran=null)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();

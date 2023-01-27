@@ -1,5 +1,6 @@
 ﻿using GaushalaAPI.Helpers;
 using GaushalaAPI.Models;
+using GaushalAPI.Entities;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections;
@@ -48,7 +49,7 @@ namespace GaushalaAPI.DBContext
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Result), medication.Result, "Result", System.Data.SqlDbType.VarChar);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.CostOfTreatment2), medication.CostOfTreatment2, "CostofTreatment2", System.Data.SqlDbType.Decimal);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Remarks), medication.Remarks, "Remarks", System.Data.SqlDbType.VarChar);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.DiseaseID), medication.DiseaseID, "DiseaseID", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.DiseaseID), medication.DiseaseID, "DiseaseID", System.Data.SqlDbType.BigInt);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.VaccinationID), medication.VaccinationID, "VaccinationID", System.Data.SqlDbType.BigInt);
                     SqlTransaction tran = null;
                     try
@@ -145,7 +146,7 @@ namespace GaushalaAPI.DBContext
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Id), medication.Id, "Id", System.Data.SqlDbType.BigInt);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Date), medication.Date, "Date", System.Data.SqlDbType.DateTime);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.AnimalID), medication.AnimalID, "AnimalID", System.Data.SqlDbType.BigInt);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Disease), medication.Disease, "Disease", System.Data.SqlDbType.BigInt);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Disease), medication.Disease, "Disease", System.Data.SqlDbType.VarChar);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Symptoms), medication.Symptoms, "Symptoms", System.Data.SqlDbType.VarChar);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Diagnosis), medication.Diagnosis, "Diagnosis", System.Data.SqlDbType.VarChar);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Treatment), medication.Treatment, "Treatment", System.Data.SqlDbType.VarChar);
@@ -153,7 +154,7 @@ namespace GaushalaAPI.DBContext
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Result), medication.Result, "Result", System.Data.SqlDbType.VarChar);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.CostOfTreatment2), medication.CostOfTreatment2, "CostofTreatment2", System.Data.SqlDbType.Decimal);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Remarks), medication.Remarks, "Remarks", System.Data.SqlDbType.VarChar);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.DiseaseID), medication.DiseaseID, "DiseaseID", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.DiseaseID), medication.DiseaseID, "DiseaseID", System.Data.SqlDbType.BigInt);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.VaccinationID), medication.VaccinationID, "VaccinationID", System.Data.SqlDbType.BigInt);
 
                     SqlTransaction tran = null;
@@ -202,6 +203,7 @@ namespace GaushalaAPI.DBContext
                     catch (Exception e)
                     {
                         Console.WriteLine("Exception : " + e.Message);
+                        Console.WriteLine("Exception : " + e.StackTrace);
                     }
                 }
             }
@@ -543,6 +545,7 @@ namespace GaushalaAPI.DBContext
                     {
                         medication = new MedicationModel(sqlrdr);
                         medication.DoctorIDs = new List<long>();
+                        medication.AnimalIDs = new List<long>();
                         
                     }
                     sqlrdr.Close();
@@ -578,6 +581,7 @@ namespace GaushalaAPI.DBContext
                             }
                             if (DoctorIds.Count > 0)
                             {
+
                                 Dictionary<long, Dictionary<string, object>> doc_names = UsersContext.GetDoctorsDataByIds(this._configuration, medication.DoctorIDs);
                                 
                                 foreach (var doc_id in DoctorIds)
@@ -615,14 +619,84 @@ namespace GaushalaAPI.DBContext
                                     }
                                 }
                             }
+                            //Animals
+                            
+                            Dictionary<long, object> medication_data_ani = MedicationContext.GetAnimalIdsByMedicationIDs2(this._configuration, med_ids);
+                            Dictionary<string, object> ani_data;
+                            try
+                            {
+                                ani_data = (Dictionary<string, object>)medication_data_ani[id];
+                            }
+                            catch (Exception e)
+                            {
+                                ani_data = new Dictionary<string, object>();
+                            }
+                            //Dictionary<long, long> Relations = (Dictionary<long, long>)ani_data["Relations"];
+                            Dictionary<long, int> AnimalIds = (Dictionary<long, int>)ani_data["AniIDS"];
+                            Console.WriteLine("ani count " + AnimalIds.Count);
+                            List<long> Ani_IDS = new List<long>();
+                            foreach (var ani_id in AnimalIds)
+                            {
+                                if (ani_id.Value == 0)
+                                {
+                                    //Ani_IDS.Add(ani_id.Key);
+                                    medication.AnimalIDs.Add(ani_id.Key);
+                                }
+                            }
+                            if (medication.AnimalIDs.Count > 0)
+                            {
+                                //get animals Data here
+                                AnimalContext animal_context = new AnimalContext(this._configuration);
+                                AnimalFilter animalFilter = new AnimalFilter();
+                                animalFilter.cols = new string[] { "Id","Name","TagNo"};
+                                Dictionary<long, Dictionary<string, object>> animal_names = animal_context.GetAnimalsDataByIds(animalFilter,medication.AnimalIDs);
+                                //Dictionary<long, Dictionary<string, object>> animal_names = UsersContext.GetAnimalsDataByIds(this._configuration, medication.AnimalsIDs);
+
+                                foreach (var ani_id in AnimalIds)
+                                {
+                                    if (ani_id.Value == 0)
+                                    {
+                                        try
+                                        {
+                                            Dictionary<string, object> animal_name_ = animal_names[ani_id.Key];
+                                            /*if (medication.AnimalDetail != "")
+                                            {
+                                                medication.AnimalDetail += ",";
+                                            }*/
+                                            //focus here
+                                            //medication.AnimalDetail += animal_name_["label"].ToString() + " " + animal_name_["name"];
+                                            animal_name_["name"] = animal_name_["TagNo"].ToString() + " " + animal_name_["Name"];
+                                            animal_name_["Name"] = Helper.IsNullOrEmpty(animal_name_["Name"]);
+                                            try
+                                            {
+                                                medication.Animals[Convert.ToInt64(animal_name_["Id"])] = animal_name_;
+                                            }
+                                            catch (Exception e2)
+                                            {
+                                                Console.WriteLine(e2.StackTrace);
+                                                Console.WriteLine(e2.Message);
+                                            }
+                                        }
+                                        catch (Exception e1)
+                                        {
+                                            Console.WriteLine("Animal not found ani id" + ani_id.Key);
+                                            Console.WriteLine(e1.StackTrace);
+                                            Console.WriteLine(e1.Message);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Animal Deleted" + ani_id);
+                                    }
+                                }
+                            }
                         }
+                    }
                         else
                         {
                             Console.WriteLine("no med ids found");
                         }
                     }
-                    
-                }
                 catch (Exception ex)
                 {
                     Console.WriteLine("Falied sds" + ex.Message);
@@ -1347,8 +1421,8 @@ namespace GaushalaAPI.DBContext
                         if (Convert.ToInt32(sqlrdr["Deleted"]) == 0 || Convert.ToInt32(sqlrdr["Deleted"]) == 1)
                         {
                             //data_.Add(Convert.ToInt64(sqlrdr["DoctorID"]));
-                            AniIDs_[Convert.ToInt64(sqlrdr["DoctorID"])] = Convert.ToInt32(sqlrdr["Deleted"]);
-                            Relations[Convert.ToInt64(sqlrdr["DoctorID"])] = Convert.ToInt64(sqlrdr["Id"]);
+                            AniIDs_[Convert.ToInt64(sqlrdr["AnimalID"])] = Convert.ToInt32(sqlrdr["Deleted"]);
+                            Relations[Convert.ToInt64(sqlrdr["AnimalID"])] = Convert.ToInt64(sqlrdr["Id"]);
                         }
                         data__["AniIDS"] = AniIDs_;
                         data__["Relations"] = Relations;
