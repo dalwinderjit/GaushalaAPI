@@ -25,6 +25,7 @@ namespace GaushalaAPI.DBContext
             ani.Category = "HEIFER";
             ani.Gender= "FEMALE";
             ani.Lactation = 0;
+            ani.BelongsToGaushala= true;
             //ani.BirthLactationNumber = 1;
             ani.GenerateImageName(CowsContext.GetMaxAnimalId(this._configuration));
             Console.WriteLine("picture " + ani.Picture);

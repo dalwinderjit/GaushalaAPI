@@ -1,4 +1,5 @@
 ﻿using GaushalaAPI.DBContext;
+using GaushalaAPI.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -8,7 +9,7 @@ namespace GaushalaAPI.Models
 {
     public class CalfModel : AnimalModel
     {
-        public string DefaultPicture = "cow_default.jpg";
+        public string DefaultPicture = "Calv_default.jpg";
         public CalfModel()
         {
 
@@ -17,48 +18,63 @@ namespace GaushalaAPI.Models
         {
             //base(sqlrdr);
         }
-        public bool ValidateCow(CowsContext cowsContext, string type = "Add")
+        public bool ValidateCalv(CalvsContext calvsContext, string type = "Add")
         {
             bool error = true;
             errors = new Dictionary<string, string>();
             Regex re;
-            re = new Regex(@"^[a-zA-Z]{1,5}-[0-9]{1,}$");
+            re = new Regex(Validations.ValidTagNoRegEx);
             Console.WriteLine(this.TagNo);
-            if(this.TagNo == null)
+            if (this.TagNo == null)
             {
-                errors.Add("tagNo", "Pleae Enter Tag Number of Cow");
+                errors.Add("tagNo", "Pleae Enter Tag Number of Calf");
                 error = false;
             }
-            else if(re.IsMatch(this.TagNo)==false)
+            else if (re.IsMatch(this.TagNo) == false)
             {
                 //Console.WriteLine("ERROR");
                 errors.Add("tagNo", "Invalid Tag Number eg. SW-123"); error = false;
             }
-            else if (cowsContext.isTagNoUnique(this.TagNo)==false) {
+            else if (calvsContext.isTagNoUnique(this.TagNo) == false)
+            {
                 //Console.WriteLine("Unique ERROR");
-                errors.Add("tagNo", "Tag Number Already Occupied"); 
+                if (type == "Add")
+                {
+                    errors.Add("tagNo", "Tag Number Already Occupied");
+                    error = false;
+                }
+            }
+            /*if (this.Category == null) {
+                errors.Add("Category", "Please provide Category");
                 error = false;
             }
-            else
+            else if (this.Category != "CALF") {
+                errors.Add("Category", "Invalid Category! Select CALF");
+                error = false;
+            }*/
+            /*if (calvsContext.isCategoryCalf(this.Category, this.Id) == false)
             {
-                //Console.WriteLine("ERROR PASSSED");
-            }
+                //Console.WriteLine("Unique ERROR");
+                errors.Add("Category", "You are not allowed to update It is not 'CALF'");
+                error = false;
+            }*/
+
             re = new Regex(@"[0-9a-zA-Z ]{2,255}");
-            if (this.Name == null) {
-                errors.Add("name", "Plasee Enter the name of cow");
-                error = false;
-            }else if (re.IsMatch(this.Name)==false)
+            if (this.Name == null)
             {
+                errors.Add("name", "Plasee Enter the name of Calf");
                 error = false;
-                errors.Add("name", "Invalid Name {2,255}");error = false;
+            }
+            else if (re.IsMatch(this.Name) == false)
+            {
+                errors.Add("name", "Invalid Name {2,255}"); error = false;
+                error = false;
             }
             if (this.Breed == null)
             {
-                errors.Add("breed", "Plasee select Breed of cow");
+                errors.Add("breed", "Plasee select Breed of Calf");
                 error = false;
             }
-            
-            
             if (this.DOB == null)
             {
                 errors.Add("dob", "Enter the Date of Birth");
@@ -66,35 +82,102 @@ namespace GaushalaAPI.Models
             }
             if (this.DamID == null)
             {
-                errors.Add("damID", "Select the Dam of Cow");
-                error = false;
+                if (this.DamNo == null && this.DamName == null)
+                {
+                    errors.Add("damID", "Select the Dam of Calf or Enter the DamName/TagNumber");
+                    error = false;
+                }
+                else
+                {
+                    re = new Regex(Validations.ValidTagNoRegEx);
+                    //validate DamNo
+                    if (this.DamNo == null)
+                    {
+                        errors.Add("DamNo", "Pleae Enter Tag Number of Dam");
+                        error = false;
+                    }
+                    else if (re.IsMatch(this.DamNo) == false)
+                    {
+                        //Console.WriteLine("ERROR");
+                        errors.Add("DamNo", "Invalid Dam's Tag Number eg. SW-123"); error = false;
+                    }
+                    else if (calvsContext.isTagNoUnique(this.DamNo) == false)
+                    {
+                        //Console.WriteLine("Unique ERROR");
+                        errors.Add("DamNo", "Dam's Tag Number Already Occupied");
+                        error = false;
+                    }
+                }
             }
             if (this.SireID == null)
             {
-                errors.Add("sireID", "Select the Sire of Cow");
-                error = false;
+                if (this.SireNo == null && this.SireName == null)
+                {
+                    errors.Add("sireID", "Select the Sire of Calf or Enter the Name/Tag No of Sire");
+                    error = false;
+                }
+                else
+                {
+                    re = new Regex(Validations.ValidTagNoRegEx);
+                    //validate SireNo
+                    if (this.SireNo == null)
+                    {
+                        errors.Add("SireNo", "Pleae Enter Tag Number of Sire");
+                        error = false;
+                    }
+                    else if (re.IsMatch(this.SireNo) == false)
+                    {
+                        //Console.WriteLine("ERROR");
+                        errors.Add("SireNo", "Invalid Sire's Tag Number eg. SW-123"); error = false;
+                    }
+                    else if (calvsContext.isTagNoUnique(this.SireNo) == false)
+                    {
+                        //Console.WriteLine("Unique ERROR");
+                        errors.Add("SireNo", "Sire's Tag Number Already Occupied");
+                        error = false;
+                    }
+                }
             }
             if (this.Colour == null)
             {
-                errors.Add("colour", "Select the colour of Cow");
+                errors.Add("colour", "Select the colour of Calf");
                 error = false;
             }
             if (this.Weight == null)
             {
-                errors.Add("weight", "Enter the weight of Cow");
+                errors.Add("weight", "Enter the weight of Calf");
                 error = false;
             }
             if (this.Height == null)
             {
-                errors.Add("height", "Enter the Height of Cow");
+                errors.Add("height", "Enter the Height of Calf");
                 error = false;
+            }
+            if (this.BirthLactationNumber == null)
+            {
+                errors.Add("birthLactationNumber", "Enter the BirthLactationNumber of Calf");
+                error = false;
+            }
+            else if (this.DamID != null)
+            {
+                if (!calvsContext.IsBirthLactionNumberUnique((int)this.BirthLactationNumber, (long)this.DamID))
+                {
+                    if (type == "Add")
+                    {
+                        errors.Add("birthLactationNumber", "BirthLactationNumber Occupied");
+                        error = false;
+                    }
+                }
             }
             if (this.Location == null)
             {
-                errors.Add("location", "Please Select the Location");
+                errors.Add("Location", "Select the Location of Calf");
                 error = false;
             }
-            this.ValidateImage();
+            if (this.ValidateImage() == false)
+            {
+                error = false;
+            };
             return error;
         }
     }

@@ -35,8 +35,9 @@ namespace GaushalaAPI.DBContext
                     {
                         //Console.WriteLine("HELLO");
                         AnimalsList_[Convert.ToInt64(sqlrdr["Id"])] = sqlrdr["TagNo"].ToString()+" - "+ (sqlrdr["Name"].ToString());
+                        Console.WriteLine(sqlrdr["TagNo"].ToString());
                         if(animalFilter.GetCategory==true){
-                            AnimalsList_[Convert.ToInt64(sqlrdr["Id"])] +="("+sqlrdr["Category"].ToString()+")";
+                            AnimalsList_[Convert.ToInt64(sqlrdr["Id"])] +=" ("+sqlrdr["Category"].ToString()+")";
                         }
                     }
                     sqlrdr.Close();
@@ -220,7 +221,7 @@ namespace GaushalaAPI.DBContext
                 offset += $" OFFSET @Start ROWS FETCH NEXT @Length ROWS ONLY";
             }
             string cols = "*";
-            if (animalFilter.cols.Length > 0)
+            if (animalFilter.cols !=null && animalFilter.cols.Length > 0)
             {
                 cols = String.Join(",", animalFilter.cols);
             }
@@ -270,130 +271,108 @@ namespace GaushalaAPI.DBContext
         }
         public string GenerateInsertAnimalSqlQuery(AnimalModel ani){
             string addQuery = "";
-            switch(ani.Category.ToUpper()){
-                case "HEIFER":
-                    string cols = "";// "[Gender],[TagNo],[Name],[Breed],[Lactation],[DOB],[Colour],[Weight],[Height],[BirthLactationNumber],[PregnancyStatus],[Status],[ReproductiveStatus],[MilkingStatus],[Location]";
-                    string params_ = "";// "@Gender,@tagNo,@name,@breed,0,@dob,@colour,@weight,@height,@BirthLactationNumber,@PregnancyStatus,@Status,@ReproductiveStatus,@MilkingStatus,@Location";
-                        
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.MilkingStatus), ref cols, ref params_, "MilkingStatus");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Location), ref cols, ref params_, "Location");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.ReproductiveStatus), ref cols, ref params_, "ReproductiveStatus");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Status), ref cols, ref params_, "Status");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.PregnancyStatus), ref cols, ref params_, "PregnancyStatus");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.BirthLactationNumber), ref cols, ref params_, "BirthLactationNumber");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Height), ref cols, ref params_, "Height");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Weight), ref cols, ref params_, "Weight");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Colour), ref cols, ref params_, "Colour");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.DOB), ref cols, ref params_, "DOB");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Lactation), ref cols, ref params_, "Lactation");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Name), ref cols, ref params_, "Name");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Breed), ref cols, ref params_, "Breed");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.TagNo), ref cols, ref params_, "TagNo");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Gender), ref cols, ref params_, "Gender");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Picture), ref cols, ref params_, "Picture");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Remarks), ref cols, ref params_, "Remarks");
-                    this.addColToQuery(!Validations.IsNullOrEmpty(ani.Category), ref cols, ref params_,"Category");
+            string cols = "";
+            string params_ = "";
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.MilkingStatus), ref cols, ref params_, "MilkingStatus");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.Location), ref cols, ref params_, "Location");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.ReproductiveStatus), ref cols, ref params_, "ReproductiveStatus");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.Status), ref cols, ref params_, "Status");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.PregnancyStatus), ref cols, ref params_, "PregnancyStatus");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.BirthLactationNumber), ref cols, ref params_, "BirthLactationNumber");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.Height), ref cols, ref params_, "Height");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.Weight), ref cols, ref params_, "Weight");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.Colour), ref cols, ref params_, "Colour");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.DOB), ref cols, ref params_, "DOB");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.Lactation), ref cols, ref params_, "Lactation");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.Name), ref cols, ref params_, "Name");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.Breed), ref cols, ref params_, "Breed");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.TagNo), ref cols, ref params_, "TagNo");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.Gender), ref cols, ref params_, "Gender");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.Picture), ref cols, ref params_, "Picture");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.Remarks), ref cols, ref params_, "Remarks");
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.Category), ref cols, ref params_,"Category");
                     
-                    if (ani.DamID != null)
-                    {
-                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.DamID), ref cols, ref params_, "DamID");
-                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.DBLY), ref cols, ref params_, "DBLY");
-                    }
-                    else
-                    {
-                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.DamName), ref cols, ref params_, "DamName");
-                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.DamNo), ref cols, ref params_, "DamNo");
-                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.DBLY), ref cols, ref params_, "DBLY");
-                    }
-                    if (ani.SireID != null)
-                    {
-                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.SireID), ref cols, ref params_, "SireID");
-                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.SDBLY), ref cols, ref params_, "SDBLY");
-                    }
-                    else
-                    {
-                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.SireName), ref cols, ref params_, "SireName");
-                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.SireNo), ref cols, ref params_, "SireNo");
-                        this.addColToQuery(!Validations.IsNullOrEmpty(ani.SDBLY), ref cols, ref params_, "SDBLY");
-                    }
-                    //string query = $"INSERT into [dbo].[Animals] ({cols}) OUTPUT INSERTED.ID values({params_});";
-                    addQuery = $"INSERT into [dbo].[Animals] ({cols}) OUTPUT INSERTED.ID values({params_});";
-                   //Console.WriteLine(addQuery);
-                    return addQuery;
-                    break;
-                case "CALF":
-                    break;
-                case "COW":
-                    break;
-                case "BULL":
-                    break;
+            if (ani.DamID != null)
+            {
+                this.addColToQuery(!Validations.IsNullOrEmpty(ani.DamID), ref cols, ref params_, "DamID");
+                this.addColToQuery(!Validations.IsNullOrEmpty(ani.DBLY), ref cols, ref params_, "DBLY");
             }
+            else
+            {
+                this.addColToQuery(!Validations.IsNullOrEmpty(ani.DamName), ref cols, ref params_, "DamName");
+                this.addColToQuery(!Validations.IsNullOrEmpty(ani.DamNo), ref cols, ref params_, "DamNo");
+                this.addColToQuery(!Validations.IsNullOrEmpty(ani.DBLY), ref cols, ref params_, "DBLY");
+            }
+            if (ani.SireID != null)
+            {
+                this.addColToQuery(!Validations.IsNullOrEmpty(ani.SireID), ref cols, ref params_, "SireID");
+                this.addColToQuery(!Validations.IsNullOrEmpty(ani.SDBLY), ref cols, ref params_, "SDBLY");
+            }
+            else
+            {
+                this.addColToQuery(!Validations.IsNullOrEmpty(ani.SireName), ref cols, ref params_, "SireName");
+                this.addColToQuery(!Validations.IsNullOrEmpty(ani.SireNo), ref cols, ref params_, "SireNo");
+                this.addColToQuery(!Validations.IsNullOrEmpty(ani.SDBLY), ref cols, ref params_, "SDBLY");
+            }
+            this.addColToQuery(!Validations.IsNullOrEmpty(ani.BelongsToGaushala), ref cols, ref params_, "BelongsToGaushala");
+            //string query = $"INSERT into [dbo].[Animals] ({cols}) OUTPUT INSERTED.ID values({params_});";
+            addQuery = $"INSERT into [dbo].[Animals] ({cols}) OUTPUT INSERTED.ID values({params_});";
+            //Console.WriteLine(addQuery);
+            return addQuery;
+                    
+            
             return addQuery;
         }
         public string GenerateUpdateAnimalSqlQuery(AnimalModel ani,AnimalFilter aniFilter)
         {
             string UpdateQuery = "";
-            switch (ani.Category.ToUpper())
+            string cols = "";// "[Gender],[TagNo],[Name],[Breed],[Lactation],[DOB],[Colour],[Weight],[Height],[BirthLactationNumber],[PregnancyStatus],[Status],[ReproductiveStatus],[MilkingStatus],[Location]";
+            string where = "";
+            //Build Where Clause for Animal Filter ????
+            where = "where Id = @Id";
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.MilkingStatus), ref cols, "MilkingStatus");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Location), ref cols, "Location");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.ReproductiveStatus), ref cols, "ReproductiveStatus");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Status), ref cols, "Status");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.PregnancyStatus), ref cols, "PregnancyStatus");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.BirthLactationNumber), ref cols, "BirthLactationNumber");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Height), ref cols, "Height");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Weight), ref cols, "Weight");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Colour), ref cols, "Colour");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DOB), ref cols, "DOB");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Lactation), ref cols, "Lactation");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Name), ref cols, "Name");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Breed), ref cols, "Breed");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.TagNo), ref cols, "TagNo");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Gender), ref cols, "Gender");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Picture), ref cols, "Picture");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Remarks), ref cols, "Remarks");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Category), ref cols, "Category");
+
+            if (ani.DamID != null)
             {
-                case "HEIFER":
-                    string cols = "";// "[Gender],[TagNo],[Name],[Breed],[Lactation],[DOB],[Colour],[Weight],[Height],[BirthLactationNumber],[PregnancyStatus],[Status],[ReproductiveStatus],[MilkingStatus],[Location]";
-                    string where = "";
-                    //Build Where Clause for Animal Filter ????
-                    where = "where Id = @Id";
-
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.MilkingStatus), ref cols, "MilkingStatus");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Location), ref cols, "Location");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.ReproductiveStatus), ref cols, "ReproductiveStatus");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Status), ref cols, "Status");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.PregnancyStatus), ref cols, "PregnancyStatus");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.BirthLactationNumber), ref cols, "BirthLactationNumber");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Height), ref cols, "Height");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Weight), ref cols, "Weight");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Colour), ref cols, "Colour");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DOB), ref cols, "DOB");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Lactation), ref cols, "Lactation");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Name), ref cols, "Name");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Breed), ref cols, "Breed");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.TagNo), ref cols, "TagNo");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Gender), ref cols, "Gender");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Picture), ref cols, "Picture");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Remarks), ref cols, "Remarks");
-                    this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.Category), ref cols, "Category");
-
-                    if (ani.DamID != null)
-                    {
-                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DamID), ref cols, "DamID");
-                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DBLY), ref cols, "DBLY");
-                    }
-                    else
-                    {
-                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DamName), ref cols, "DamName");
-                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DamNo), ref cols, "DamNo");
-                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DBLY), ref cols, "DBLY");
-                    }
-                    if (ani.SireID != null)
-                    {
-                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SireID), ref cols, "SireID");
-                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SDBLY), ref cols, "SDBLY");
-                    }
-                    else
-                    {
-                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SireName), ref cols, "SireName");
-                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SireNo), ref cols, "SireNo");
-                        this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SDBLY), ref cols, "SDBLY");
-                    }
-                    //string query = $"INSERT into [dbo].[Animals] ({cols}) OUTPUT INSERTED.ID values({params_});";
-                    UpdateQuery = $"UPDATE [dbo].[Animals] set {cols} {where};";
-                    Console.WriteLine(UpdateQuery);
-                    return UpdateQuery;
-                    break;
-                case "CALF":
-                    break;
-                case "COW":
-                    break;
-                case "BULL":
-                    break;
+                this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DamID), ref cols, "DamID");
+                this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DBLY), ref cols, "DBLY");
             }
+            else
+            {
+                this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DamName), ref cols, "DamName");
+                this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DamNo), ref cols, "DamNo");
+                this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.DBLY), ref cols, "DBLY");
+            }
+            if (ani.SireID != null)
+            {
+                this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SireID), ref cols, "SireID");
+                this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SDBLY), ref cols, "SDBLY");
+            }
+            else
+            {
+                this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SireName), ref cols, "SireName");
+                this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SireNo), ref cols, "SireNo");
+                this.addColToUpdateQuery(!Validations.IsNullOrEmpty(ani.SDBLY), ref cols, "SDBLY");
+            }
+            UpdateQuery = $"UPDATE [dbo].[Animals] set {cols} {where};";
+            Console.WriteLine(UpdateQuery);
             return UpdateQuery;
         }
         public void addColToUpdateQuery(bool add, ref string cols, string colName)
@@ -451,9 +430,53 @@ namespace GaushalaAPI.DBContext
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.MilkingStatus), ani.MilkingStatus, "MilkingStatus", System.Data.SqlDbType.VarChar);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Remarks), ani.Remarks, "Remarks", System.Data.SqlDbType.VarChar);
                     this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Picture), ani.Picture, "Picture", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.BelongsToGaushala), ani.BelongsToGaushala, "BelongsToGaushala", System.Data.SqlDbType.Bit);
                     return sqlcmd;
                     break;
                 case "CALF":
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Id), ani.Id, "Id", System.Data.SqlDbType.BigInt);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Name), ani.Name, "Name", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.TagNo), ani.TagNo, "TagNo", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Breed), ani.Breed, "Breed", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Category), ani.Category, "Category", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Lactation), ani.Lactation, "Lactation", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DOB), ani.DOB, "DOB", System.Data.SqlDbType.DateTime);
+                    if (ani.DamID != null)
+                    {
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DamID), ani.DamID, "DamID", System.Data.SqlDbType.Int);
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DBLY), ani.DBLY, "DBLY", System.Data.SqlDbType.VarChar);
+                    }
+                    else
+                    {
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DamName), ani.DamName, "DamName", System.Data.SqlDbType.VarChar);
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DamNo), ani.DamNo, "DamNo", System.Data.SqlDbType.VarChar);
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.DBLY), ani.DBLY, "DBLY", System.Data.SqlDbType.VarChar);
+                    }
+                    if (ani.SireID != null)
+                    {
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.SireID), ani.SireID, "SireID", System.Data.SqlDbType.BigInt);
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.SDBLY), ani.SDBLY, "SDBLY", System.Data.SqlDbType.VarChar);
+                    }
+                    else
+                    {
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.SireName), ani.SireName, "SireName", System.Data.SqlDbType.VarChar);
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.SireNo), ani.SireNo, "SireNo", System.Data.SqlDbType.VarChar);
+                        this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.SDBLY), ani.SDBLY, "SDBLY", System.Data.SqlDbType.VarChar);
+                    }
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Gender), ani.Gender, "Gender", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Colour), ani.Colour, "Colour", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Weight), ani.Weight, "Weight", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Height), ani.Height, "Height", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.BirthLactationNumber), ani.BirthLactationNumber, "BirthLactationNumber", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Location), ani.Location, "Location", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.PregnancyStatus), ani.PregnancyStatus, "PregnancyStatus", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Status), ani.Status, "Status", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.ReproductiveStatus), ani.ReproductiveStatus, "ReproductiveStatus", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.MilkingStatus), ani.MilkingStatus, "MilkingStatus", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Remarks), ani.Remarks, "Remarks", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.Picture), ani.Picture, "Picture", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(ani.BelongsToGaushala), ani.BelongsToGaushala, "BelongsToGaushala", System.Data.SqlDbType.Bit);
+                    return sqlcmd;
                     break;
                 case "COW":
                     break;
@@ -585,7 +608,8 @@ namespace GaushalaAPI.DBContext
                     }
                 }
                 String query = this.GenerateInsertAnimalSqlQuery(ani);
-                //Console.WriteLine("Query " +query);
+                Console.WriteLine("Query " +query);
+                Console.WriteLine("Query " +query);
                 SqlCommand sqlcmd = new SqlCommand(query, conn);
                 //Console.WriteLine("HELLO command creted");
                 sqlcmd = this.SetSqlCommandParameter(sqlcmd, ani);
@@ -662,7 +686,7 @@ namespace GaushalaAPI.DBContext
                 }
                 catch (Exception e)
                 {
-                    //Console.WriteLine(e.Message);
+                    Console.WriteLine(e.Message);
                     Console.WriteLine(e.StackTrace);
                     //Console.WriteLine("Savin Failed");
                     Dictionary<string, string> data2 = new Dictionary<string, string>();
@@ -1199,6 +1223,122 @@ namespace GaushalaAPI.DBContext
             return where;
         }
         
+        public bool isCategoryCalf(string catg, long? id = null)
+        {
+            if (id != null)
+            {
+                string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    //Console.WriteLine("Select count(*) as total from Animals where Category = @Category");
+                    string query = $"Select count(*) as total from Animals where Category = @Category";
+                    if (id != null)
+                    {
+                        query += " and ID = @Id";
+                    }
+                    //Console.WriteLine(query);
+                    SqlCommand sqlcmd = new SqlCommand();
+                    sqlcmd.Connection = conn;
+                    sqlcmd.CommandText = query;
+                    try
+                    {
+                        sqlcmd.Parameters.Add("@Category", System.Data.SqlDbType.VarChar);
+                        sqlcmd.Parameters["@Category"].Value = "CALF";
+                        if (id != null)
+                        {
+                            sqlcmd.Parameters.Add("@Id", System.Data.SqlDbType.BigInt);
+                            sqlcmd.Parameters["@Id"].Value = id;
+                        }
+                        conn.Open();
+                        SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
+                        if (sqlrdr.Read())
+                        {
+                            int total = Convert.ToInt32(sqlrdr.GetValue(0));
+                            sqlrdr.Close();
+                            conn.Close();
+                            if (total > 0)
+                            {
+                                return true;
+
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return false;
+                    }
+                }
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
+        public bool isCategoryHeifer(string catg, long? id = null)
+        {
+            if (id != null)
+            {
+                string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    //Console.WriteLine("Select count(*) as total from Animals where Category = @Category");
+                    string query = $"Select count(*) as total from Animals where Category = @Category";
+                    if (id != null)
+                    {
+                        query += " and ID = @Id";
+                    }
+                    //Console.WriteLine(query);
+                    SqlCommand sqlcmd = new SqlCommand();
+                    sqlcmd.Connection = conn;
+                    sqlcmd.CommandText = query;
+                    try
+                    {
+                        sqlcmd.Parameters.Add("@Category", System.Data.SqlDbType.VarChar);
+                        sqlcmd.Parameters["@Category"].Value = "HEIFER";
+                        if (id != null)
+                        {
+                            sqlcmd.Parameters.Add("@Id", System.Data.SqlDbType.BigInt);
+                            sqlcmd.Parameters["@Id"].Value = id;
+                        }
+                        conn.Open();
+                        SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
+                        if (sqlrdr.Read())
+                        {
+                            int total = Convert.ToInt32(sqlrdr.GetValue(0));
+                            sqlrdr.Close();
+                            conn.Close();
+                            if (total > 0)
+                            {
+                                return true;
+
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return false;
+                    }
+                }
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
         /*
         internal int GetTotalFilteredAnimals(AnimalFilter animalFilters)
         {

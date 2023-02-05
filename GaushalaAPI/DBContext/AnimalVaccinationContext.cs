@@ -9,67 +9,66 @@ using System.Data.SqlClient;
 
 namespace GaushalaAPI.DBContext
 {
-    public class MedicationContext : BaseContext
+    public class AnimalVaccinationContext : AnimalContext
     {
         private readonly IConfiguration _configuration;
-        public MedicationContext(IConfiguration configuration) : base(configuration)
+        public AnimalVaccinationContext(IConfiguration configuration) : base(configuration)
         {
             _configuration = configuration;
         }
-        internal Dictionary<string, object> AddMedicationDetail(AnimalMedicationModel medication)
+        internal Dictionary<string, object> AddVaccinationDetail(AnimalVaccinationModel vaccination)
         {
 
             Dictionary<string, object> data = new Dictionary<string, object>();
-            
-            if (medication.ValidateMedication("Add") == true)
+            if (vaccination.ValidateVaccination("Add") == true)
             {
-                if (medication.AnimalIDs == null)
+                if (vaccination.AnimalIDs == null)
                 {
-                    medication.AnimalIDs = new List<long>();
-                    medication.AnimalIDs.Add((long)medication.AnimalID);
-                }else if (medication.AnimalIDs.Count == 0)
+                    vaccination.AnimalIDs = new List<long>();
+                    vaccination.AnimalIDs.Add((long)vaccination.AnimalID);
+                }else if (vaccination.AnimalIDs.Count == 0)
                 {
-                    medication.AnimalIDs.Add((long)medication.AnimalID);
+                    vaccination.AnimalIDs.Add((long)vaccination.AnimalID);
                 }
-                string query = "";// "Insert into Medication (Date,AnimalID,Disease,Symptoms,Diagnosis,Prognosis,Treatment,Result,CostofTreatment2,Remarks) OUTPUT INSERTED.ID Values"+
+                string query = "";// "Insert into Vaccination (Date,AnimalID,Disease,Symptoms,Diagnosis,Prognosis,Treatment,Result,CostofTreatment2,Remarks) OUTPUT INSERTED.ID Values"+
                 //"(@Date,@AnimalID,@Disease,@Symptoms,@Diagnosis,@Prognosis,@Treatment,@Result,@CostofTreatment2,@Remarks)";
-                query = this.GenerateInsertMedicationSqlQuery(medication);
+                query = this.GenerateInsertAnimalVaccinationSqlQuery(vaccination);
                 Console.WriteLine(query);
                 string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     SqlCommand sqlcmd = new SqlCommand(query, conn);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Date), medication.Date, "Date", System.Data.SqlDbType.DateTime);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.AnimalID), medication.AnimalID, "AnimalID", System.Data.SqlDbType.BigInt);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Disease), medication.Disease, "Disease", System.Data.SqlDbType.VarChar);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Symptoms), medication.Symptoms, "Symptoms", System.Data.SqlDbType.VarChar);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Diagnosis), medication.Diagnosis, "Diagnosis", System.Data.SqlDbType.VarChar);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Treatment), medication.Treatment, "Treatment", System.Data.SqlDbType.VarChar);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Prognosis), medication.Prognosis, "Prognosis", System.Data.SqlDbType.Int);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Result), medication.Result, "Result", System.Data.SqlDbType.VarChar);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.CostOfTreatment2), medication.CostOfTreatment2, "CostofTreatment2", System.Data.SqlDbType.Decimal);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.Remarks), medication.Remarks, "Remarks", System.Data.SqlDbType.VarChar);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.DiseaseID), medication.DiseaseID, "DiseaseID", System.Data.SqlDbType.BigInt);
-                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(medication.VaccinationID), medication.VaccinationID, "VaccinationID", System.Data.SqlDbType.BigInt);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(vaccination.Date), vaccination.Date, "Date", System.Data.SqlDbType.DateTime);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(vaccination.AnimalID), vaccination.AnimalID, "AnimalID", System.Data.SqlDbType.BigInt);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(vaccination.Disease), vaccination.Disease, "Disease", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(vaccination.Symptoms), vaccination.Symptoms, "Symptoms", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(vaccination.Diagnosis), vaccination.Diagnosis, "Diagnosis", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(vaccination.Treatment), vaccination.Treatment, "Treatment", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(vaccination.Prognosis), vaccination.Prognosis, "Prognosis", System.Data.SqlDbType.Int);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(vaccination.Result), vaccination.Result, "Result", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(vaccination.CostOfTreatment2), vaccination.CostOfTreatment2, "CostofTreatment2", System.Data.SqlDbType.Decimal);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(vaccination.Remarks), vaccination.Remarks, "Remarks", System.Data.SqlDbType.VarChar);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(vaccination.DiseaseID), vaccination.DiseaseID, "DiseaseID", System.Data.SqlDbType.BigInt);
+                    this.AddColToSqlCommand(ref sqlcmd, !Validations.IsNullOrEmpty(vaccination.VaccinationID), vaccination.VaccinationID, "VaccinationID", System.Data.SqlDbType.BigInt);
                     SqlTransaction tran = null;
                     try
                     {
                         conn.Open();
-                        tran = conn.BeginTransaction("Medication");
+                        tran = conn.BeginTransaction("Vaccination");
                         tran.Save("save1");
                         sqlcmd.Transaction = tran;
-                        medication.Id = (Int64)sqlcmd.ExecuteScalar();
-                        Dictionary<string,object> mediDocData= this.AddMedicationDoctors(medication.Id,medication.DoctorIDs,conn,tran);
-                        Dictionary<string, object> mediAniData = this.AddMedicationAnimals(medication.Id, medication.AnimalIDs, conn, tran);
+                        vaccination.Id = (Int64)sqlcmd.ExecuteScalar();
+                        Dictionary<string,object> mediDocData= this.AddVaccinationDoctors(vaccination.Id,vaccination.DoctorIDs,conn,tran);
+                        Dictionary<string, object> mediAniData = this.AddVaccinationAnimals(vaccination.Id, vaccination.AnimalIDs, conn, tran);
                         Dictionary<string, string> mediDocData_ = (Dictionary<string, string>)mediDocData["data"];
                         Dictionary<string, string> mediAniData_ = (Dictionary<string, string>)mediAniData["data"];
                         if(mediDocData_["status"] == "success" && mediAniData_["status"].ToString() == "success")
                         {
-                            if(medication.Id >0){
+                            if(vaccination.Id >0){
                                 Dictionary<string, string> data2 = new Dictionary<string, string>();
                                 tran.Commit();
                                 Console.WriteLine("Commiting");
-                                data2["message"] = "Cow Medication Data Saved Successfully! "+mediDocData_["message"] +"! " + mediAniData_["message"];
+                                data2["message"] = "Animal Vaccination Data Saved Successfully! "+mediDocData_["message"] +"! " + mediAniData_["message"];
                                 data2["status"] = "success";
                                 data["data"] = data2;
                             }else
@@ -77,7 +76,7 @@ namespace GaushalaAPI.DBContext
                                 tran.Rollback();
                                 Console.WriteLine("rolling back");
                                 Dictionary<string, string> data2 = new Dictionary<string, string>();
-                                data2["message"] = "Cow Medication Date Saving Failed";
+                                data2["message"] = "Animal Vaccination Date Saving Failed";
                                 data2["status"] = "failure";
                                 data["data"] = data2;
                             }
@@ -87,7 +86,7 @@ namespace GaushalaAPI.DBContext
                             tran.Rollback();
                             Console.WriteLine("rolling back second");
                             Dictionary<string, string> data2 = new Dictionary<string, string>();
-                            data2["message"] = "Cow Medication Date Saving Failed"+mediDocData["message"]+mediAniData["message"];
+                            data2["message"] = "Animal Vaccination Date Saving Failed"+mediDocData["message"]+mediAniData["message"];
                             data2["status"] = "failure";
                             data["data"] = data2;
                         }
@@ -102,15 +101,15 @@ namespace GaushalaAPI.DBContext
             else
             {
                 Dictionary<string, string> data2 = new Dictionary<string, string>();
-                data2["message"] = "Cow Medication Date Saving Failed.Invalid Data Entered";
+                data2["message"] = "Animal Vaccination Date Saving Failed.Invalid Data Entered";
                 data2["status"] = "failure";
-                data["errors"] = medication.errors;
+                data["errors"] = vaccination.errors;
                 data["data"] = data2;
             }
             return data;
             
         }
-        public string GenerateInsertMedicationSqlQuery(AnimalMedicationModel medi)
+        public string GenerateInsertAnimalVaccinationSqlQuery(AnimalVaccinationModel medi)
         {
             string addQuery = "";
             string cols = "";
@@ -129,13 +128,13 @@ namespace GaushalaAPI.DBContext
             addQuery = $"INSERT into [dbo].[Medication] ({cols}) OUTPUT INSERTED.ID values({params_});";
             return addQuery;
         }
-        internal Dictionary<string, object> EditMedicationDetail(AnimalMedicationModel medication)
+        internal Dictionary<string, object> EditVaccinationDetail(AnimalVaccinationModel medication)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
 
-            if (medication.ValidateMedication("Edit") == true)
+            if (medication.ValidateVaccination("Edit") == true)
             {
-                /*string query = "UPdate Medication set Date = @Date,AnimalID = @AnimalID,Disease = @Disease,Symptoms = @Symptoms,Diagnosis = @Diagnosis," +
+                /*string query = "UPdate Vaccination set Date = @Date,AnimalID = @AnimalID,Disease = @Disease,Symptoms = @Symptoms,Diagnosis = @Diagnosis," +
                     "Prognosis = @Prognosis,Treatment = @Treatment,Result = @Result,CostofTreatment2 = @CostofTreatment2,Remarks = @Remarks  where Id = @Id";*/
                 string query = this.GenerateUpdateAnimalSqlQuery(medication);
                 Console.WriteLine(query);
@@ -161,12 +160,12 @@ namespace GaushalaAPI.DBContext
                     try
                     {
                         conn.Open();
-                        tran = conn.BeginTransaction("Medication");
+                        tran = conn.BeginTransaction("Vaccination");
                         tran.Save("save1");
                         sqlcmd.Transaction = tran;
                         int i = sqlcmd.ExecuteNonQuery();
-                        Dictionary<string, object> mediDocData = this.UpdateMedicationDoctors(medication.Id, medication.DoctorIDs,conn,tran);
-                        Dictionary<string, object> mediAniData = this.UpdateMedicationAnimalIDs(medication.Id, medication.AnimalIDs,conn,tran);
+                        Dictionary<string, object> mediDocData = this.UpdateVaccinationDoctors(medication.Id, medication.DoctorIDs,conn,tran);
+                        Dictionary<string, object> mediAniData = this.UpdateVaccinationAnimalIDs(medication.Id, medication.AnimalIDs,conn,tran);
                         Dictionary<string, string> mediDocData_ = (Dictionary<string, string>)mediDocData["data"];
                         Dictionary<string, string> mediAniData_ = (Dictionary<string, string>)mediAniData["data"];
                         if (mediDocData_["status"] == "success" && mediAniData_["status"] == "success")
@@ -176,7 +175,7 @@ namespace GaushalaAPI.DBContext
                                 Dictionary<string, string> data2 = new Dictionary<string, string>();
                                 tran.Commit();
                                 Console.WriteLine("Commiting");
-                                data2["message"] = "Cow Medication Data Saved Successfully." + mediDocData_["message"] + mediAniData_["message"];
+                                data2["message"] = "Animal Vaccination Data Saved Successfully." + mediDocData_["message"] + mediAniData_["message"];
                                 data2["status"] = "success";
                                 data["data"] = data2;
                             }
@@ -185,7 +184,7 @@ namespace GaushalaAPI.DBContext
                                 tran.Rollback();
                                 Console.WriteLine("rolling back");
                                 Dictionary<string, string> data2 = new Dictionary<string, string>();
-                                data2["message"] = "Cow Medication Date Updating Failed";
+                                data2["message"] = "Animal Vaccination Date Updating Failed";
                                 data2["status"] = "failure";
                                 data["data"] = data2;
                             }
@@ -195,7 +194,7 @@ namespace GaushalaAPI.DBContext
                             tran.Rollback();
                             Console.WriteLine("rolling back second");
                             Dictionary<string, string> data2 = new Dictionary<string, string>();
-                            data2["message"] = "Cow Medication Dat Saving Failed";
+                            data2["message"] = "Animal Vaccination Dat Saving Failed";
                             data2["status"] = "failure";
                             data["data"] = data2;
                         }
@@ -210,7 +209,7 @@ namespace GaushalaAPI.DBContext
             else
             {
                 Dictionary<string, string> data2 = new Dictionary<string, string>();
-                data2["message"] = "Cow Medication Date Saving Failed.Invalid Data Entered";
+                data2["message"] = "Animal Vaccination Date Saving Failed.Invalid Data Entered";
                 data2["status"] = "failure";
                 data["errors"] = medication.errors;
                 data["data"] = data2;
@@ -218,13 +217,13 @@ namespace GaushalaAPI.DBContext
             return data;
         }
 
-        private Dictionary<string, object> UpdateMedicationAnimalIDs(long? medication_id, List<long> newAnimalIds, SqlConnection conn2, SqlTransaction tran)
+        private Dictionary<string, object> UpdateVaccinationAnimalIDs(long? medication_id, List<long> newAnimalIds, SqlConnection conn2, SqlTransaction tran)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             //get the old doctor ids
             List<long> medication_ids = new List<long>();
             medication_ids.Add((long)medication_id);
-            Dictionary<long, object> medication_data = MedicationContext.GetAnimalIdsByMedicationIDs2(this._configuration, medication_ids);
+            Dictionary<long, object> medication_data = AnimalVaccinationContext.GetAnimalIdsByVaccinationIDs2(this._configuration, medication_ids);
             Dictionary<string, object> ani_data;
             try
             {
@@ -237,7 +236,7 @@ namespace GaushalaAPI.DBContext
                 return data;
             }
 
-            Dictionary<long, long> OldMedicationIds = (Dictionary<long, long>)ani_data["Relations"];
+            Dictionary<long, long> OldVaccinationIds = (Dictionary<long, long>)ani_data["Relations"];
             Dictionary<long, int> OldAnimalIds = (Dictionary<long, int>)ani_data["AniIDS"];
 
 
@@ -252,7 +251,7 @@ namespace GaushalaAPI.DBContext
                     int deleted = 0;
                     long med_id = 0;
                     OldAnimalIds.TryGetValue(doc_id, out deleted);
-                    OldMedicationIds.TryGetValue(doc_id, out med_id);
+                    OldVaccinationIds.TryGetValue(doc_id, out med_id);
                     if (deleted == 0)
                     {
                         AlreadyAddedAnimalIds.Add(doc_id);
@@ -277,7 +276,7 @@ namespace GaushalaAPI.DBContext
                     if (doc_id.Value == 0)
                     {
                         long med_id = 0;
-                        OldMedicationIds.TryGetValue(doc_id.Key, out med_id);
+                        OldVaccinationIds.TryGetValue(doc_id.Key, out med_id);
                         AnimalIdsToBeDeleted.Add(med_id);
                     }
                 }
@@ -288,7 +287,7 @@ namespace GaushalaAPI.DBContext
             string id_message = "";
             if (AnimalIdsToBeAdded.Count > 0)
             {
-                Dictionary<string, object> addData = this.AddMedicationAnimals(medication_id, AnimalIdsToBeAdded, conn2, tran);
+                Dictionary<string, object> addData = this.AddVaccinationAnimals(medication_id, AnimalIdsToBeAdded, conn2, tran);
                 if (((Dictionary<string, string>)addData["data"])["status"] == "success")
                 {
                     addData_ = true;
@@ -309,7 +308,7 @@ namespace GaushalaAPI.DBContext
             }
             if (AnimalIdsToBeDeleted.Count > 0)
             {
-                Dictionary<string, object> deleteData = this.DeleteMedicationAnimals(medication_id, AnimalIdsToBeDeleted, conn2, tran);
+                Dictionary<string, object> deleteData = this.DeleteVaccinationAnimals(medication_id, AnimalIdsToBeDeleted, conn2, tran);
                 if (((Dictionary<string, string>)deleteData["data"])["status"] == "success")
                 {
                     deleteData_ = true;
@@ -331,7 +330,7 @@ namespace GaushalaAPI.DBContext
             //to be recovered
             if (AnimalIdsToBeRecovered.Count > 0)
             {
-                Dictionary<string, object> recoverData = this.RecoverMedicationAnimals(medication_id, AnimalIdsToBeRecovered, conn2, tran);
+                Dictionary<string, object> recoverData = this.RecoverVaccinationAnimals(medication_id, AnimalIdsToBeRecovered, conn2, tran);
                 if (((Dictionary<string, string>)recoverData["data"])["status"] == "success")
                 {
                     recoverData_ = true;
@@ -363,7 +362,7 @@ namespace GaushalaAPI.DBContext
             return data;
         }
 
-        public string GenerateUpdateAnimalSqlQuery(AnimalMedicationModel medi)
+        public string GenerateUpdateAnimalSqlQuery(AnimalVaccinationModel medi)
         {
             string UpdateQuery = "";
             string cols = "";// "[Gender],[TagNo],[Name],[Breed],[Lactation],[DOB],[Colour],[Weight],[Height],[BirthLactationNumber],[PregnancyStatus],[Status],[ReproductiveStatus],[MilkingStatus],[Location]";
@@ -389,13 +388,13 @@ namespace GaushalaAPI.DBContext
             return UpdateQuery;
                     
         }
-        private Dictionary<string, object> UpdateMedicationDoctors(long? medication_id, List<long> newDoctorIDs, SqlConnection conn2, SqlTransaction tran)
+        private Dictionary<string, object> UpdateVaccinationDoctors(long? medication_id, List<long> newDoctorIDs, SqlConnection conn2, SqlTransaction tran)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             //get the old doctor ids
             List<long> medication_ids = new List<long>();
             medication_ids.Add((long)medication_id);
-            Dictionary<long, object> medication_data = MedicationContext.GetDoctorIdsByMedicationIDs2(this._configuration, medication_ids);
+            Dictionary<long, object> medication_data = AnimalVaccinationContext.GetDoctorIdsByVaccinationIDs2(this._configuration, medication_ids);
             Dictionary<string, object> doc_data;
             try
             {
@@ -407,7 +406,7 @@ namespace GaushalaAPI.DBContext
                 return data;
             }
 
-            Dictionary<long, long> OldMedicationIds = (Dictionary<long, long>)doc_data["Relations"];
+            Dictionary<long, long> OldVaccinationIds = (Dictionary<long, long>)doc_data["Relations"];
             Dictionary<long, int> OldDoctorIds = (Dictionary<long, int>)doc_data["DocIDS"];
             
 
@@ -421,7 +420,7 @@ namespace GaushalaAPI.DBContext
                     int deleted = 0;
                     long med_id = 0;
                     OldDoctorIds.TryGetValue(doc_id, out deleted);
-                    OldMedicationIds.TryGetValue(doc_id, out med_id);
+                    OldVaccinationIds.TryGetValue(doc_id, out med_id);
                     if (deleted == 0)
                     {
                         AlreadyAddedDoctorIds.Add(doc_id);
@@ -445,7 +444,7 @@ namespace GaushalaAPI.DBContext
                     if (doc_id.Value == 0)
                     {
                         long med_id = 0;
-                        OldMedicationIds.TryGetValue(doc_id.Key, out med_id);
+                        OldVaccinationIds.TryGetValue(doc_id.Key, out med_id);
                         DoctorIdsToBeDeleted.Add(med_id);
                     }
                 }
@@ -455,7 +454,7 @@ namespace GaushalaAPI.DBContext
             bool recoverData_ = true;
             string id_message = "";
             if (DoctorIdsToBeAdded.Count > 0) {
-                Dictionary<string, object> addData = this.AddMedicationDoctors(medication_id, DoctorIdsToBeAdded, conn2, tran);
+                Dictionary<string, object> addData = this.AddVaccinationDoctors(medication_id, DoctorIdsToBeAdded, conn2, tran);
                 if (((Dictionary<string, string>)addData["data"])["status"] == "success") {
                     addData_ = true;
                 }
@@ -474,7 +473,7 @@ namespace GaushalaAPI.DBContext
                 addData_ = true;
             }
             if (DoctorIdsToBeDeleted.Count > 0) {
-                Dictionary<string, object>  deleteData = this.DeleteMedicationDoctors(medication_id, DoctorIdsToBeDeleted, conn2, tran);
+                Dictionary<string, object>  deleteData = this.DeleteVaccinationDoctors(medication_id, DoctorIdsToBeDeleted, conn2, tran);
                 if (((Dictionary<string, string>)deleteData["data"])["status"] == "success") {
                     deleteData_ = true;
                 }
@@ -494,7 +493,7 @@ namespace GaushalaAPI.DBContext
             }
             //to be recovered
             if (DoctorIdsToBeRecovered.Count > 0) {
-                Dictionary<string, object>  recoverData = this.RecoverMedicationDoctors(medication_id, DoctorIdsToBeRecovered, conn2, tran);
+                Dictionary<string, object>  recoverData = this.RecoverVaccinationDoctors(medication_id, DoctorIdsToBeRecovered, conn2, tran);
                 if (((Dictionary<string, string>)recoverData["data"])["status"] == "success")
                 {
                     recoverData_ = true;
@@ -525,9 +524,9 @@ namespace GaushalaAPI.DBContext
             return data;
         }
 
-        internal AnimalMedicationModel? GetMedicationDetailById(long id)
+        internal AnimalVaccinationModel? GetVaccinationDetailById(long id)
         {
-            AnimalMedicationModel? medication = null;
+            AnimalVaccinationModel? medication = null;
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
@@ -543,7 +542,7 @@ namespace GaushalaAPI.DBContext
                     SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
                     while (sqlrdr.Read())
                     {
-                        medication = new AnimalMedicationModel(sqlrdr);
+                        medication = new AnimalVaccinationModel(sqlrdr);
                         medication.DoctorIDs = new List<long>();
                         medication.AnimalIDs = new List<long>();
                         
@@ -557,7 +556,7 @@ namespace GaushalaAPI.DBContext
                         med_ids.Add((long)medication.Id);
                         if (med_ids.Count > 0)
                         {
-                            Dictionary<long, object> medication_data = MedicationContext.GetDoctorIdsByMedicationIDs2(this._configuration, med_ids);
+                            Dictionary<long, object> medication_data = AnimalVaccinationContext.GetDoctorIdsByVaccinationIDs2(this._configuration, med_ids);
                             Dictionary<string, object> doc_data;
                             try
                             {
@@ -621,7 +620,7 @@ namespace GaushalaAPI.DBContext
                             }
                             //Animals
                             
-                            Dictionary<long, object> medication_data_ani = MedicationContext.GetAnimalIdsByMedicationIDs2(this._configuration, med_ids);
+                            Dictionary<long, object> medication_data_ani = AnimalVaccinationContext.GetAnimalIdsByVaccinationIDs2(this._configuration, med_ids);
                             Dictionary<string, object> ani_data;
                             try
                             {
@@ -706,7 +705,7 @@ namespace GaushalaAPI.DBContext
             return medication;
         }
 
-        public Dictionary<string,object> AddMedicationDoctors(long? id,List<long> doctorIds,SqlConnection conn2=null, SqlTransaction tran=null){
+        public Dictionary<string,object> AddVaccinationDoctors(long? id,List<long> doctorIds,SqlConnection conn2=null, SqlTransaction tran=null){
            Dictionary<string, object> data = new Dictionary<string, object>();
             if (true)
             {
@@ -749,21 +748,21 @@ namespace GaushalaAPI.DBContext
                             i++;
                         }
                         if(tran!=null){
-                            tran.Save("addMedicationDoctors");
+                            tran.Save("addVaccinationDoctors");
                             sqlcmd.Transaction = tran;
                         }
                         int j = sqlcmd.ExecuteNonQuery();
                         if (j > 0)
                         {
                             Dictionary<string, string> data2 = new Dictionary<string, string>();
-                            data2["message"] = "Cow Medication Data Saved Successfully";
+                            data2["message"] = "Animal Vaccination Data Saved Successfully";
                             data2["status"] = "success";
                             data["data"] = data2;
                         }
                         else
                         {
                             Dictionary<string, string> data2 = new Dictionary<string, string>();
-                            data2["message"] = "Cow Medication Date Saving Failed";
+                            data2["message"] = "Animal Vaccination Data Saving Failed";
                             data2["status"] = "failure";
                             data["data"] = data2;
                         }
@@ -775,14 +774,14 @@ namespace GaushalaAPI.DBContext
                 else
                 {
                     Dictionary<string, string> data2 = new Dictionary<string, string>();
-                    data2["message"] = "Adding Medication Doctors Failed! Invaid Data Enterred";
+                    data2["message"] = "Adding Vaccination Doctors Failed! Invaid Data Enterred";
                     data2["status"] = "failure";
                     data["data"] = data2;
                 }
             }
             return data;
         }
-        public Dictionary<string, object> AddMedicationAnimals(long? id, List<long> animalIDs, SqlConnection conn2 = null, SqlTransaction tran = null)
+        public Dictionary<string, object> AddVaccinationAnimals(long? id, List<long> animalIDs, SqlConnection conn2 = null, SqlTransaction tran = null)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             if (true)
@@ -817,10 +816,10 @@ namespace GaushalaAPI.DBContext
                             {
                                 values += ",";
                             }
-                            values += $"(@MedicationID{i},@AnimalID{i})";
+                            values += $"(@MedicationID{i},@AnimalID{i},@Deleted{i})";
                             i++;
                         }
-                        query = $"Insert into MedicationAnimalIDs (MedicationID,AnimalID) values {values}";
+                        query = $"Insert into MedicationAnimalIDs (MedicationID,AnimalID,Deleted) values {values}";
                         Console.WriteLine(query);
                         sqlcmd.CommandText = query;
                         i = 0;
@@ -830,25 +829,27 @@ namespace GaushalaAPI.DBContext
                             sqlcmd.Parameters[$"@MedicationID{i}"].Value = id;
                             sqlcmd.Parameters.Add($"@AnimalID{i}", System.Data.SqlDbType.BigInt);
                             sqlcmd.Parameters[$"@AnimalID{i}"].Value = (long)m;
+                            sqlcmd.Parameters.Add($"@Deleted{i}", System.Data.SqlDbType.Bit);
+                            sqlcmd.Parameters[$"@Deleted{i}"].Value = false;
                             i++;
                         }
                         if (tran != null)
                         {
-                            tran.Save("addMedicationAnimals");
+                            tran.Save("addVaccinationAnimals");
                             sqlcmd.Transaction = tran;
                         }
                         int j = sqlcmd.ExecuteNonQuery();
                         if (j > 0)
                         {
                             Dictionary<string, string> data2 = new Dictionary<string, string>();
-                            data2["message"] = "Animals Added Successfully to medication";
+                            data2["message"] = "Animals Added Successfully to Vaccination";
                             data2["status"] = "success";
                             data["data"] = data2;
                         }
                         else
                         {
                             Dictionary<string, string> data2 = new Dictionary<string, string>();
-                            data2["message"] = "Animals Addition Failed Medication";
+                            data2["message"] = "Animals Addition Failed Vaccination";
                             data2["status"] = "failure";
                             data["data"] = data2;
                         }
@@ -861,7 +862,7 @@ namespace GaushalaAPI.DBContext
                 else
                 {
                     Dictionary<string, string> data2 = new Dictionary<string, string>();
-                    data2["message"] = "Adding Animals to Medication Failed! Invaid Data Enterred";
+                    data2["message"] = "Adding Animals to Vaccination Failed! Invaid Data Enterred";
                     data2["status"] = "failure";
                     data["data"] = data2;
                 }
@@ -869,7 +870,7 @@ namespace GaushalaAPI.DBContext
             return data;
         }
         
-        public Dictionary<string, object> DeleteMedicationDoctors(long? medicationID, List<long> doctorIdsToBeDeleted, SqlConnection conn2 = null, SqlTransaction tran = null)
+        public Dictionary<string, object> DeleteVaccinationDoctors(long? medicationID, List<long> doctorIdsToBeDeleted, SqlConnection conn2 = null, SqlTransaction tran = null)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             if (true)
@@ -923,7 +924,7 @@ namespace GaushalaAPI.DBContext
                         Console.WriteLine("Medication ID "+ medicationID);
                         if (tran != null)
                         {
-                            tran.Save("deleteMedicationDoctors");
+                            tran.Save("deleteVaccinationDoctors");
                             sqlcmd.Transaction = tran;
                         }
                         int j = sqlcmd.ExecuteNonQuery();
@@ -959,7 +960,7 @@ namespace GaushalaAPI.DBContext
             }
             return data;
         }
-        public Dictionary<string, object> RecoverMedicationDoctors(long? medicationID, List<long> doctorIdsToBeRecovered, SqlConnection conn2 = null, SqlTransaction tran = null)
+        public Dictionary<string, object> RecoverVaccinationDoctors(long? medicationID, List<long> doctorIdsToBeRecovered, SqlConnection conn2 = null, SqlTransaction tran = null)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             if (true)
@@ -1013,7 +1014,7 @@ namespace GaushalaAPI.DBContext
                         Console.WriteLine(medicationID);
                         if (tran != null)
                         {
-                            tran.Save("deleteMedicationDoctors");
+                            tran.Save("deleteVaccinationDoctors");
                             sqlcmd.Transaction = tran;
                         }
                         int j = sqlcmd.ExecuteNonQuery();
@@ -1049,7 +1050,7 @@ namespace GaushalaAPI.DBContext
             }
             return data;
         }
-        public Dictionary<string, object> GetMedicationDetailByAnimalId(long id,int page=1,int limit=10){
+        public Dictionary<string, object> GetVaccinationDetailByAnimalId(long id,int page=1,int limit=10){
             int sno = 1;
             Dictionary<string, object> data = new Dictionary<string, object>();
             ArrayList ar = new ArrayList();
@@ -1064,7 +1065,37 @@ namespace GaushalaAPI.DBContext
             Dictionary<string,string> animalDetail = CowsContext.GetCowNameTagNoById(this._configuration,id);
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = "select * from Medication where AnimalId = @AnimalId order by Date Desc OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY";
+                //get Medication IDS by AnimalI
+                List<long> medi_IDS = this.GetMedicationIDsByAnimalId(id);
+                string ids = "";
+                string where = "where ";
+                string vaccinationClause = " VaccinationID is not NULL ";
+                if (medi_IDS.Count > 0)
+                {
+                    foreach (long id_ in medi_IDS)
+                    {
+                        if (ids != "")
+                        {
+                            ids += ",";
+                        }
+                        ids += id_.ToString();
+                    }
+                    if (ids.Length != 0)
+                    {
+                        where += $" (AnimalID = @AnimalID  or Id in ({ids}) )";
+                    }
+                    else
+                    {
+                        where += $" AnimalID = @AnimalID ";
+                    }
+                    where += " and " + vaccinationClause;
+                }
+                else
+                {
+                    where += $" AnimalID = @AnimalID and " + vaccinationClause;
+                }
+                string query = $"select * from Medication {where} order by Date Desc OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY";
+
                 Console.WriteLine(query);
                 SqlCommand sqlcmd = new SqlCommand(query, conn);
                 try
@@ -1089,9 +1120,10 @@ namespace GaushalaAPI.DBContext
                         }catch{
                             medication["Date"] = "";
                         }
-                        medication["AnimalID"] = sqlrdr["AnimalID"];
+                        //medication["AnimalID"] = sqlrdr["AnimalID"];
+                        medication["AnimalID"] = id;
                         medication["AnimalNo"] = animalDetail["tagNo"]+" / "+ animalDetail["name"];
-                        medication["Disease"] = sqlrdr["Disease"];
+                        medication["Disease"] = Helper.IsNullOrEmpty(sqlrdr["Disease"]);
                         medication["Symptoms"] = sqlrdr["Symptoms"];
                         medication["Diagnosis"] = sqlrdr["Diagnosis"];
                         medication["Treatment"] = sqlrdr["Treatment"];
@@ -1109,7 +1141,7 @@ namespace GaushalaAPI.DBContext
                     conn.Close();
                     Console.WriteLine("COnnection closed");
                     if(med_ids.Count>0){
-                        Dictionary<long, object> medication_data = MedicationContext.GetDoctorIdsByMedicationIDs2(this._configuration,med_ids);
+                        Dictionary<long, object> medication_data = AnimalVaccinationContext.GetDoctorIdsByVaccinationIDs2(this._configuration,med_ids);
                         List<long> Doc_Ids = new List<long>();
                         foreach(var m in medication_data)
                         {
@@ -1124,16 +1156,7 @@ namespace GaushalaAPI.DBContext
                         if (Doc_Ids.Count > 0)
                         {
                             Dictionary<long, Dictionary<string, object>> doc_names = UsersContext.GetDoctorsDataByIds(this._configuration,Doc_Ids);
-                            /*foreach(var m in doc_names)
-                            {
-                                Dictionary<string, object> dd = (Dictionary<string, object>)m.Value;
-                                foreach(var m1 in dd)
-                                {
-                                    Console.WriteLine(m1.Key.ToString() + " " + m1.Value.ToString());
-                                }
-                                //Console.WriteLine(dd["Name"] + " " + dd["Label"]);
-                                Console.WriteLine(m.Key.ToString() + " " + m.Value.ToString());
-                            }*/
+                            
                             foreach(Dictionary<string,object>m in ar)
                             {
                                 try
@@ -1193,18 +1216,79 @@ namespace GaushalaAPI.DBContext
                 }
             }
             data["data"] = ar;
-            data["recordsTotal"] = this.GetTotalMedicationDetailByAnimalId(id);
+            data["recordsTotal"] = this.GetTotalVaccinationDetailByAnimalId(id);
             data["recordsFiltered"] = data["recordsTotal"];//Filteration pending
             return data;
         }
-        public long GetTotalMedicationDetailByAnimalId(long id)
+        public List<long> GetMedicationIDsByAnimalId(long id)
+        {
+            List<long> medicationIds = new List<long>();
+            string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+            //Dictionary<string, string> animalDetail = CowsContext.GetCowNameTagNoById(this._configuration, id);
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "select * from MedicationAnimalIDs where AnimalId = @AnimalId and Deleted = 0";
+                Console.WriteLine(query);
+                SqlCommand sqlcmd = new SqlCommand(query, conn);
+                try
+                {
+                    conn.Open();
+                    sqlcmd.Parameters.Add("@AnimalId", System.Data.SqlDbType.BigInt);
+                    sqlcmd.Parameters["@AnimalId"].Value = id;
+                    SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
+                    while (sqlrdr.Read())
+                    {
+                        medicationIds.Add(Convert.ToInt32(sqlrdr["MedicationID"]));
+                    }
+                    sqlrdr.Close();
+                    conn.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed sds" + ex.Message);
+                    Console.WriteLine(ex.StackTrace);
+                }
+            }
+            return medicationIds;
+        }
+        public long GetTotalVaccinationDetailByAnimalId(long id)
         {
             long total = 0;
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
             Dictionary<string, string> animalDetail = CowsContext.GetCowNameTagNoById(this._configuration, id);
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = "select count(*) as total from Medication where AnimalId = @AnimalId";
+                List<long> medi_IDS = this.GetMedicationIDsByAnimalId(id);
+                string ids = "";
+                string where = "where ";
+                string vaccinationClause = " VaccinationID is not NULL ";
+                if (medi_IDS.Count > 0)
+                {
+                    foreach (long id_ in medi_IDS)
+                    {
+                        if (ids != "")
+                        {
+                            ids += ",";
+                        }
+                        ids += id_.ToString();
+                    }
+                    if (ids.Length != 0)
+                    {
+                        where += $" (AnimalID = @AnimalID  or Id in ({ids}) )";
+                    }
+                    else
+                    {
+                        where += $" AnimalID = @AnimalID ";
+                    }
+                    where += " and "+vaccinationClause;
+                }
+                else
+                {
+                    where += $" AnimalID = @AnimalID and "+vaccinationClause;
+                }
+                
+                //string query = $"select * from Medication {where} order by Date Desc OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY";
+                string query = $"select count(*) as total from Medication {where} ";
                 Console.WriteLine(query);
                 SqlCommand sqlcmd = new SqlCommand(query, conn);
                 try
@@ -1228,7 +1312,7 @@ namespace GaushalaAPI.DBContext
             }
             return total;
         }
-        public static Dictionary<string, object> GetDoctorIdsByMedicationIDs(IConfiguration _configuration, List<long> med_ids)
+        public static Dictionary<string, object> GetDoctorIdsByVaccinationIDs(IConfiguration _configuration, List<long> med_ids)
         {
             Dictionary<string, object> ret_data = new Dictionary<string, object>();
             Dictionary<long, List<long>> data = new Dictionary<long, List<long>>();
@@ -1273,7 +1357,7 @@ namespace GaushalaAPI.DBContext
                     sqlrdr.Close();
                     conn.Close();
                     Console.WriteLine("COnnection closed");
-                    //Dictionary<long, Dictionary<long, long>> med_doc_ids_relation = this.GetDoctoreIdsByMedicationIDs(med_ids);
+                    //Dictionary<long, Dictionary<long, long>> med_doc_ids_relation = this.GetDoctoreIdsByVaccinationIDs(med_ids);
                 }
                 catch (Exception ex)
                 {
@@ -1285,13 +1369,13 @@ namespace GaushalaAPI.DBContext
             ret_data["DoctorIds"] = DoctorIds;
             return ret_data;
         }
-        public static Dictionary<long, object> GetDoctorIdsByMedicationIDs2(IConfiguration _configuration, List<long> med_ids)
+        public static Dictionary<long, object> GetDoctorIdsByVaccinationIDs2(IConfiguration _configuration, List<long> med_ids)
         {
             Dictionary<string, object> ret_data = new Dictionary<string, object>();
             Dictionary<long, List<long>> data = new Dictionary<long, List<long>>();
             Dictionary<long,int> DoctorIds = new Dictionary<long, int>();
-            Dictionary<long,int> MedicationIds = new Dictionary<long, int>();
-            Dictionary<long, object> MedicationIDS = new Dictionary<long, object>();
+            Dictionary<long,int> VaccinationIds = new Dictionary<long, int>();
+            Dictionary<long, object> VaccinationIDS = new Dictionary<long, object>();
 
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
             string ids = "";
@@ -1321,10 +1405,10 @@ namespace GaushalaAPI.DBContext
                         Dictionary<string, object> data__;
                         try
                         {
-                            data__ = (Dictionary<string, object>)MedicationIDS[Convert.ToInt64(sqlrdr["MedicationID"])];
+                            data__ = (Dictionary<string, object>)VaccinationIDS[Convert.ToInt64(sqlrdr["MedicationID"])];
                             DocIDs_ = (Dictionary<long, int>)data__["DocIDS"];
                             Relations = (Dictionary<long, long>)data__["Relations"];
-                            //data_ = data[Convert.ToInt64(sqlrdr["MedicationID"])];
+                            //data_ = data[Convert.ToInt64(sqlrdr["VaccinationID"])];
                         }
                         catch (Exception e)
                         {
@@ -1342,22 +1426,12 @@ namespace GaushalaAPI.DBContext
                         }
                         data__["DocIDS"] = DocIDs_;
                         data__["Relations"] = Relations;
-                        MedicationIDS[Convert.ToInt64(sqlrdr["MedicationID"])] = data__;
-                        /*if (DoctorIds.ContainsKey((Convert.ToInt64(sqlrdr["DoctorID"]))) == false)
-                        {
-                            DoctorIds[Convert.ToInt64(sqlrdr["DoctorID"])] = Convert.ToInt32(sqlrdr["Deleted"]);
-                            
-                        }
-                        if (MedicationIds.ContainsKey((Convert.ToInt64(sqlrdr["DoctorID"]))) == false)
-                        {
-                            MedicationIds[Convert.ToInt64(sqlrdr["DoctorID"])] = Convert.ToInt32(sqlrdr["Id"]);
-                        }
-                        data[Convert.ToInt64(sqlrdr["MedicationID"])] = data_;*/
+                        VaccinationIDS[Convert.ToInt64(sqlrdr["MedicationID"])] = data__;
                     }
                     sqlrdr.Close();
                     conn.Close();
                     Console.WriteLine("COnnection closed");
-                    //Dictionary<long, Dictionary<long, long>> med_doc_ids_relation = this.GetDoctoreIdsByMedicationIDs(med_ids);
+                    //Dictionary<long, Dictionary<long, long>> med_doc_ids_relation = this.GetDoctoreIdsByVaccinationIDs(med_ids);
                 }
                 catch (Exception ex)
                 {
@@ -1367,16 +1441,16 @@ namespace GaushalaAPI.DBContext
             }
             //ret_data["Relations"] = data;
             //ret_data["DoctorIds"] = DoctorIds;
-            //ret_data["MedicationIds"] = MedicationIds;
-            return MedicationIDS;
+            //ret_data["VaccinationIds"] = VaccinationIds;
+            return VaccinationIDS;
         }
-        public static Dictionary<long, object> GetAnimalIdsByMedicationIDs2(IConfiguration _configuration, List<long> med_ids)
+        public static Dictionary<long, object> GetAnimalIdsByVaccinationIDs2(IConfiguration _configuration, List<long> med_ids)
         {
             Dictionary<string, object> ret_data = new Dictionary<string, object>();
             Dictionary<long, List<long>> data = new Dictionary<long, List<long>>();
             Dictionary<long, int> AnimalIds = new Dictionary<long, int>();
-            Dictionary<long, int> MedicationIds = new Dictionary<long, int>();
-            Dictionary<long, object> MedicationIDS = new Dictionary<long, object>();
+            Dictionary<long, int> VaccinationIds = new Dictionary<long, int>();
+            Dictionary<long, object> VaccinationIDS = new Dictionary<long, object>();
 
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
             string ids = "";
@@ -1406,10 +1480,10 @@ namespace GaushalaAPI.DBContext
                         Dictionary<string, object> data__;
                         try
                         {
-                            data__ = (Dictionary<string, object>)MedicationIDS[Convert.ToInt64(sqlrdr["MedicationID"])];
+                            data__ = (Dictionary<string, object>)VaccinationIDS[Convert.ToInt64(sqlrdr["MedicationID"])];
                             AniIDs_ = (Dictionary<long, int>)data__["AniIDS"];
                             Relations = (Dictionary<long, long>)data__["Relations"];
-                            //data_ = data[Convert.ToInt64(sqlrdr["MedicationID"])];
+                            //data_ = data[Convert.ToInt64(sqlrdr["VaccinationID"])];
                         }
                         catch (Exception e)
                         {
@@ -1427,22 +1501,22 @@ namespace GaushalaAPI.DBContext
                         }
                         data__["AniIDS"] = AniIDs_;
                         data__["Relations"] = Relations;
-                        MedicationIDS[Convert.ToInt64(sqlrdr["MedicationID"])] = data__;
+                        VaccinationIDS[Convert.ToInt64(sqlrdr["MedicationID"])] = data__;
                         /*if (DoctorIds.ContainsKey((Convert.ToInt64(sqlrdr["DoctorID"]))) == false)
                         {
                             DoctorIds[Convert.ToInt64(sqlrdr["DoctorID"])] = Convert.ToInt32(sqlrdr["Deleted"]);
                             
                         }
-                        if (MedicationIds.ContainsKey((Convert.ToInt64(sqlrdr["DoctorID"]))) == false)
+                        if (VaccinationIds.ContainsKey((Convert.ToInt64(sqlrdr["DoctorID"]))) == false)
                         {
-                            MedicationIds[Convert.ToInt64(sqlrdr["DoctorID"])] = Convert.ToInt32(sqlrdr["Id"]);
+                            VaccinationIds[Convert.ToInt64(sqlrdr["DoctorID"])] = Convert.ToInt32(sqlrdr["Id"]);
                         }
-                        data[Convert.ToInt64(sqlrdr["MedicationID"])] = data_;*/
+                        data[Convert.ToInt64(sqlrdr["VaccinationID"])] = data_;*/
                     }
                     sqlrdr.Close();
                     conn.Close();
                     Console.WriteLine("COnnection closed");
-                    //Dictionary<long, Dictionary<long, long>> med_doc_ids_relation = this.GetDoctoreIdsByMedicationIDs(med_ids);
+                    //Dictionary<long, Dictionary<long, long>> med_doc_ids_relation = this.GetDoctoreIdsByVaccinationIDs(med_ids);
                 }
                 catch (Exception ex)
                 {
@@ -1452,10 +1526,10 @@ namespace GaushalaAPI.DBContext
             }
             //ret_data["Relations"] = data;
             //ret_data["DoctorIds"] = DoctorIds;
-            //ret_data["MedicationIds"] = MedicationIds;
-            return MedicationIDS;
+            //ret_data["VaccinationIds"] = VaccinationIds;
+            return VaccinationIDS;
         }
-        public Dictionary<string, object> RecoverMedicationAnimals(long? medicationID, List<long> animalIdsToBeRecovered, SqlConnection conn2 = null, SqlTransaction tran = null)
+        public Dictionary<string, object> RecoverVaccinationAnimals(long? medicationID, List<long> animalIdsToBeRecovered, SqlConnection conn2 = null, SqlTransaction tran = null)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             if (true)
@@ -1509,7 +1583,7 @@ namespace GaushalaAPI.DBContext
                         Console.WriteLine(medicationID);
                         if (tran != null)
                         {
-                            tran.Save("deleteMedicationanimals");
+                            tran.Save("deleteVaccinationanimals");
                             sqlcmd.Transaction = tran;
                         }
                         int j = sqlcmd.ExecuteNonQuery();
@@ -1545,7 +1619,7 @@ namespace GaushalaAPI.DBContext
             }
             return data;
         }
-        public Dictionary<string, object> DeleteMedicationAnimals(long? medicationID, List<long> animalIdsToBeDeleted, SqlConnection conn2 = null, SqlTransaction tran = null)
+        public Dictionary<string, object> DeleteVaccinationAnimals(long? medicationID, List<long> animalIdsToBeDeleted, SqlConnection conn2 = null, SqlTransaction tran = null)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             if (true)
@@ -1596,10 +1670,10 @@ namespace GaushalaAPI.DBContext
                         }
                         sqlcmd.Parameters.Add($"@MedicationID", System.Data.SqlDbType.BigInt);
                         sqlcmd.Parameters[$"@MedicationID"].Value = medicationID;
-                        Console.WriteLine("Medication ID " + medicationID);
+                        Console.WriteLine("Vaccination ID " + medicationID);
                         if (tran != null)
                         {
-                            tran.Save("deleteMedicationAnimals");
+                            tran.Save("deleteVaccinationAnimals");
                             sqlcmd.Transaction = tran;
                         }
                         int j = sqlcmd.ExecuteNonQuery();
@@ -1635,5 +1709,6 @@ namespace GaushalaAPI.DBContext
             }
             return data;
         }
+
     }
 }

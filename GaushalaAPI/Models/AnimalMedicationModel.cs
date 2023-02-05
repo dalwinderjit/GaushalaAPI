@@ -6,10 +6,11 @@ using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
 using GaushalaAPI.DBContext;
+using GaushalaAPI.Helpers;
 
 namespace GaushalaAPI.Models
 {
-    public class MedicationModel
+    public class AnimalMedicationModel
     {
         public Dictionary<string, string>? errors { get; set; }
         public long? Id { get; set; }
@@ -33,7 +34,7 @@ namespace GaushalaAPI.Models
         public Dictionary<long,Dictionary<string,object>>? Doctors { get; set; }
         public Dictionary<long,Dictionary<string,object>>? Animals { get; set; }
         
-        public MedicationModel()
+        public AnimalMedicationModel()
         {
 
         }
@@ -105,10 +106,14 @@ namespace GaushalaAPI.Models
             {
                 errors.Add("Treatment", "Please enter the Treatment");
                 error = false;
-            }if (this.Prognosis == null)
+            }
+            if (type2 == "Medication")
             {
-                errors.Add("Prognosis", "Please select the prognosis.");
-                error = false;
+                if (this.Prognosis == null)
+                {
+                    errors.Add("Prognosis", "Please select the prognosis.");
+                    error = false;
+                }
             }
             if (this.Result == null)
             {
@@ -132,7 +137,7 @@ namespace GaushalaAPI.Models
             }
             return error;
         }
-        public MedicationModel(SqlDataReader sqlrdr) {
+        public AnimalMedicationModel(SqlDataReader sqlrdr) {
             Id = Convert.ToInt32(sqlrdr["Id"]);
             try
             {
@@ -218,10 +223,14 @@ namespace GaushalaAPI.Models
                 DoctorDetail = Convert.ToString(sqlrdr["DoctorDetail"]);
             }
             catch (Exception e){}
+
+            if (!Validations.IsNullOrEmpty(sqlrdr["VaccinationID"])) {
+                VaccinationID = Convert.ToInt32(sqlrdr["VaccinationID"]);
+            }
             Doctors = new Dictionary<long,Dictionary<string, object>>();
             Animals = new Dictionary<long,Dictionary<string, object>>();
         }
-        static public Dictionary<string,object> GetFormatedMedication(MedicationModel medication)
+        static public Dictionary<string,object> GetFormatedMedication(AnimalMedicationModel medication)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             data["id"] = medication.Id;
@@ -242,6 +251,7 @@ namespace GaushalaAPI.Models
             data["treatment"] = medication.Treatment.ToString();
             data["doctors"] = Helper.IsNullOrEmpty(medication.Doctors);
             data["animals"] = Helper.IsNullOrEmpty(medication.Animals);
+            data["vaccinationID"] = Helper.IsNullOrEmpty(medication.VaccinationID);
             data["errors"] = medication.errors;
             return data;
         }

@@ -26,24 +26,24 @@ namespace GaushalaAPI.Controllers
             medicationContext = new MedicationContext(_configuration);
         }
         [HttpPost]
-        public Dictionary<string,object> AddMedicationDetail(MedicationModel medication)
+        public Dictionary<string,object> AddMedicationDetail(AnimalMedicationModel medication)
         {
             return medicationContext.AddMedicationDetail(medication);
         }
         [HttpPost]
-        public Dictionary<string,object> EditMedicationDetail(MedicationModel medication)
+        public Dictionary<string,object> EditMedicationDetail(AnimalMedicationModel medication)
         {
             return medicationContext.EditMedicationDetail(medication);
         }
         [HttpPost]
         public Dictionary<string,object> GetMedicationDetailById(long id)
         {
-            MedicationModel? medication = medicationContext.GetMedicationDetailById(id);
+            AnimalMedicationModel? medication = medicationContext.GetMedicationDetailById(id);
             Dictionary<string, object> data = new Dictionary<string, object>();
             if (medication != null)
             {
                 data["status"] = "success";
-                data["medication"] = MedicationModel.GetFormatedMedication(medication);
+                data["medication"] = AnimalMedicationModel.GetFormatedMedication(medication);
             }
             else
             {
