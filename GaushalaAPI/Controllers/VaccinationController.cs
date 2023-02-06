@@ -57,6 +57,11 @@ namespace GaushalaAPI.Controllers
         public List<Dictionary<string,object>> GetVaccinationList(VaccinationFilter vaccinationFilter){
             return vaccinationContext.GetVaccinationList(vaccinationFilter);
         }
-       
+        [HttpPost]
+        public Dictionary<long, string> GetVaccinationIDNamePair(VaccinationFilter vaccinationFilter)
+        {
+            return vaccinationContext.GetVaccinationIdNamePair(vaccinationFilter);
+        }
+
     }
 }

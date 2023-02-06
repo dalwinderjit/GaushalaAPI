@@ -357,7 +357,7 @@ namespace GaushalaAPI.DBContext
             this.addColToUpdateQuery(!Validations.IsNullOrEmpty(vaccination.State), ref cols, "State");
             this.addColToUpdateQuery(!Validations.IsNullOrEmpty(vaccination.AddedBy), ref cols, "AddedBy");
             this.addColToUpdateQuery(!Validations.IsNullOrEmpty(vaccination.Created), ref cols, "Created");
-            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(vaccination.Updated), ref cols, "Udpated");
+            this.addColToUpdateQuery(!Validations.IsNullOrEmpty(vaccination.Updated), ref cols, "Updated");
             this.addColToUpdateQuery(!Validations.IsNullOrEmpty(vaccination.VaccinationBrandID), ref cols, "VaccinationBrandID");
             this.addColToUpdateQuery(!Validations.IsNullOrEmpty(vaccination.VaccinationType), ref cols, "VaccinationType");
             this.addColToUpdateQuery(!Validations.IsNullOrEmpty(vaccination.AmountPerPiece), ref cols, "AmountPerPiece");
@@ -397,8 +397,108 @@ namespace GaushalaAPI.DBContext
             }
             return medication;
         }
-        
-        
+
+        internal Dictionary<long, string> GetVaccinationIdNamePair(VaccinationFilter vaccination)
+        {
+            List<Dictionary<string, object>> VaccinationBrandList_ = new List<Dictionary<string, object>>();
+            Dictionary<long, string> Vaccination = new Dictionary<long, string>();
+            string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+            using (conn = new SqlConnection(connectionString))
+            {
+                Console.WriteLine("HIE");
+                string where = "";
+                if (vaccination.Ids != null && vaccination.Ids.Length > 0)
+                {
+                    if (where != "") { where += " and "; }
+                    where += $" Id in ({String.Join(',', vaccination.Ids)})";
+                }
+                if (vaccination.Name != null && vaccination.Name != "")
+                {
+                    if (where != "") { where += " and "; }
+                    where += $" Name like @Name ";
+                }
+                if (vaccination.Description != null && vaccination.Description != "")
+                {
+                    if (where != "") { where += " and "; }
+                    where += $" Description like @Description";
+                }
+
+                string orderBy = "";
+                if (vaccination.OrderBy != null && vaccination.OrderBy != "" && vaccination.Order != null && vaccination.Order != "")
+                {
+                    orderBy += $" order by ID ASC ";
+                }
+                string offset = "";
+                if (vaccination.PageNo != null && vaccination.RecordsPerPage != null)
+                {
+                    offset += $" OFFSET @Start ROWS FETCH NEXT @Length ROWS ONLY";
+                }
+                string cols = "*";
+                if (vaccination.cols.Length > 0)
+                {
+                    cols = String.Join(",", vaccination.cols);
+                }
+                if (where != "")
+                {
+                    where = " where " + where;
+                }
+                string query = $"Select {cols} from VaccinationStock {where} {orderBy}  {offset}";
+                Console.WriteLine(query);
+                SqlCommand sqlcmd = new SqlCommand(query, conn);
+                //SqlCommand sqlcmd = new SqlCommand("Update [dbo].[Animals] set [TagNo] = @tagNo,[Name] = @name,[Category] = @Category where [Animals].[Id] = @ID", conn);
+                if (vaccination.Ids != null && vaccination.Ids.Length > 0)
+                {
+                    //if (where != "") { where += " and "; }
+                    //where += $" Id in (@Ids)";
+                    //sqlcmd.Parameters.Add("@Ids", System.Data.SqlDbType.);
+                    //sqlcmd.Parameters["@Ids"].Value = animalFilter.Name;
+                }
+                if (vaccination.Name != null && vaccination.Name != "")
+                {
+                    sqlcmd.Parameters.Add("@Name", System.Data.SqlDbType.VarChar);
+                    sqlcmd.Parameters["@Name"].Value = vaccination.Name;
+                }
+                if (vaccination.Description != null && vaccination.Description != "")
+                {
+                    sqlcmd.Parameters.Add("@Description", System.Data.SqlDbType.VarChar);
+                    sqlcmd.Parameters["@Description"].Value = vaccination.Description;
+                }
+                if (vaccination.OrderBy != null && vaccination.OrderBy != "" && vaccination.Order != null && vaccination.Order != "")
+                {
+                    sqlcmd.Parameters.Add("@OrderBy", System.Data.SqlDbType.VarChar);
+                    sqlcmd.Parameters["@OrderBy"].Value = vaccination.OrderBy;
+                    sqlcmd.Parameters.Add("@Order", System.Data.SqlDbType.VarChar);
+                    sqlcmd.Parameters["@Order"].Value = vaccination.Order;
+                }
+                if (vaccination.PageNo != null && vaccination.RecordsPerPage != null)
+                {
+                    vaccination.CalculateStartLength();
+                    sqlcmd.Parameters.Add("@Start", System.Data.SqlDbType.Int);
+                    sqlcmd.Parameters["@Start"].Value = vaccination.Start;
+                    sqlcmd.Parameters.Add("@Length", System.Data.SqlDbType.Int);
+                    sqlcmd.Parameters["@Length"].Value = vaccination.Length;
+                }
+                try
+                {
+                    conn.Open();
+                    SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
+                    while (sqlrdr.Read())
+                    {
+                        Vaccination[Convert.ToInt64(sqlrdr["Id"])] = sqlrdr["Name"].ToString();
+
+                    }
+                    sqlrdr.Close();
+                    conn.Close();
+                    return Vaccination;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    Console.WriteLine(ex.StackTrace);
+                    return Vaccination;
+                }
+            }
+        }
 
     }
 }
