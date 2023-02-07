@@ -13,6 +13,7 @@ using System.Net;
 using System.IO;
 using System.Linq;
 using System.Collections;
+using GaushalAPI.Entities;
 
 namespace GaushalaAPI.Controllers
 {
@@ -154,6 +155,39 @@ namespace GaushalaAPI.Controllers
         public Dictionary<string, object> EditSellBull(SalePurchaseAnimal salePurchaseAnimal, BuyerSellerModal buyerSellerModal)
         {
             return bullsContext.EditSellBull(salePurchaseAnimal,buyerSellerModal);
+        }
+        [HttpPost]
+        public Dictionary<string, object> GetDataForBullProfilePageAPI()
+        {
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            //breeds
+            AnimalBreedsContext animalBreedsContext = new AnimalBreedsContext(_configuration);
+            AnimalBreedsFilter animalBreedsFilter = new AnimalBreedsFilter();
+            animalBreedsFilter.PageNo = 1;
+            animalBreedsFilter.RecordsPerPage = 50;
+            Dictionary<long, string> breeds = animalBreedsContext.GetAnimalBreedsIdNamePair(animalBreedsFilter);
+            data["breeds"] = breeds;
+            //colors
+            AnimalColorsContext animalColorsContext = new AnimalColorsContext(_configuration);
+            AnimalColorsFilter animalColorsFilter = new AnimalColorsFilter();
+            animalColorsFilter.PageNo = 1;
+            animalColorsFilter.RecordsPerPage = 50;
+            Dictionary<long, string> colors = animalColorsContext.GetAnimalColorsIdNamePair(animalColorsFilter);
+            data["colors"] = colors;
+            //performance
+            Dictionary<string, string> performance = new Dictionary<string, string>();
+            performance["SEMEN"] = "Artificial Intelligence";
+            performance["NATURAL"] = "Natural";
+            data["performance"] = performance;
+            //BullLocation
+            Dictionary<long, string> animalLocation = new Dictionary<long, string>();
+            animalLocation[1] = "Shed A";
+            animalLocation[2] = "Shed B";
+            animalLocation[3] = "Shed C";
+            animalLocation[4] = "Shed D";
+            animalLocation[5] = "Shed E";
+            data["animalLocations"] = animalLocation;
+            return data;
         }
     }
 }
