@@ -112,7 +112,8 @@ namespace GaushalaAPI.DBContext
                 if (addressCountryModelFilter.OrderBy != null && addressCountryModelFilter.OrderBy != "" && addressCountryModelFilter.Order != null && addressCountryModelFilter.Order != "")
                 {
                     addressCountryModelFilter.Order = Helper.GetValidateOrderClause(addressCountryModelFilter.Order);
-                    orderBy += $" order by Case @OrderBy When 'ID' then [Country] When 'Country' then Country when 'Deleted' then Deleted else ID END {addressCountryModelFilter.Order} ";
+                    orderBy += $" order by Case @OrderBy When 'ID' then CAST([ID] as varchar(256)) When 'Country' then Country when 'Deleted' then cast(Deleted as varchar(10)) else cast(ID as varchar(256))  END {addressCountryModelFilter.Order} ";
+                    //orderBy += $" order by case 1 when 1 then Country else ID end {addressCountryModelFilter.Order} ";
                     //orderBy += $" order by Id ASC ";
 
                 }
@@ -318,10 +319,10 @@ namespace GaushalaAPI.DBContext
             return addressCountryModel;
         }
 
-        internal Dictionary<long, string> GetAddressCountryIdNamePair(AddressCountryFilter addressCountryModelFilter)
+        internal Dictionary<string, string> GetAddressCountryIdNamePair(AddressCountryFilter addressCountryModelFilter)
         {
             List<Dictionary<string, object>> AddressCountryList_ = new List<Dictionary<string, object>>();
-            Dictionary<long, string> AddressCountry = new Dictionary<long, string>();
+            Dictionary<string, string> AddressCountry = new Dictionary<string, string>();
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
             using (conn = new SqlConnection(connectionString))
             {
@@ -345,7 +346,8 @@ namespace GaushalaAPI.DBContext
                 if (addressCountryModelFilter.OrderBy != null && addressCountryModelFilter.OrderBy != "" && addressCountryModelFilter.Order != null && addressCountryModelFilter.Order != "")
                 {
                     addressCountryModelFilter.Order = Helper.GetValidateOrderClause(addressCountryModelFilter.Order);
-                    orderBy += $" order by Case @OrderBy When 'ID' then ID When 'Country' then Country when 'Deleted' then Deleted END {addressCountryModelFilter.Order} ";
+                    //orderBy += $" order by Case @OrderBy When 'ID' then ID When 'Country' then Country when 'Deleted' then Deleted END {addressCountryModelFilter.Order} ";
+                    orderBy += $" order by Case @OrderBy When 'ID' then CAST([ID] as varchar(256)) When 'Country' then Country when 'Deleted' then cast(Deleted as varchar(10)) else cast(ID as varchar(256))  END {addressCountryModelFilter.Order} ";
                 }
                 else
                 {
@@ -385,6 +387,8 @@ namespace GaushalaAPI.DBContext
                     sqlcmd.Parameters.Add("@Deleted", System.Data.SqlDbType.VarChar);
                     sqlcmd.Parameters["@Deleted"].Value = addressCountryModelFilter.Deleted;
                 }
+                Console.WriteLine("Order by " + addressCountryModelFilter.OrderBy);
+                Console.WriteLine("Order by " + addressCountryModelFilter.Order);
                 if (addressCountryModelFilter.OrderBy != null && addressCountryModelFilter.OrderBy != "" && addressCountryModelFilter.Order != null && addressCountryModelFilter.Order != "")
                 {
                     sqlcmd.Parameters.Add("@OrderBy", System.Data.SqlDbType.VarChar);
@@ -406,7 +410,8 @@ namespace GaushalaAPI.DBContext
                     SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
                     while (sqlrdr.Read())
                     {
-                        AddressCountry[Convert.ToInt64(sqlrdr["Id"])] = sqlrdr["Country"].ToString();
+                        Console.WriteLine(sqlrdr["Id"].ToString()+" "+sqlrdr["Country"].ToString());
+                        AddressCountry[sqlrdr["Id"].ToString()] = sqlrdr["Country"].ToString();
                     }
                     sqlrdr.Close();
                     conn.Close();

@@ -22,13 +22,13 @@ namespace GaushalaAPI.Models
         public Dictionary<string, string> errors { get; set; }
         public AddressStateModel()
         {
-
+            errors = new Dictionary<string, string>();
         }
         public AddressStateModel(IConfiguration configuration)
         {
 
         }
-        public bool ValidateAnimalStates(string type = "Add") {
+        public bool ValidateAddressState(string type = "Add") {
             bool error = true;
             if (type == "Edit")
             {
@@ -58,25 +58,25 @@ namespace GaushalaAPI.Models
         public AddressStateModel(SqlDataReader sqlrdr) {
             Id = Convert.ToInt32(sqlrdr["Id"]);
             if (!Validations.IsNullOrEmpty(sqlrdr["State"])) { 
-                State = sqlrdr["Description"].ToString();
+                State = sqlrdr["State"].ToString();
             }
             if (!Validations.IsNullOrEmpty(sqlrdr["CountryID"])) {
                 CountryID = Convert.ToInt64(sqlrdr["CountryID"]);
             }
             if (!Validations.IsNullOrEmpty(sqlrdr["Deleted"]))
             {
-                Deleted = Convert.ToBoolean(sqlrdr["Name"]);
+                Deleted = Convert.ToBoolean(sqlrdr["Deleted"]);
             }
             if (!Validations.IsNullOrEmpty(sqlrdr["Created"]))
             {
-                Created = (DateTime)sqlrdr["Crearted"];
+                Created = (DateTime)sqlrdr["Created"];
             }
             if (!Validations.IsNullOrEmpty(sqlrdr["Updated"]))
             {
                 Updated = (DateTime)sqlrdr["Updated"];
             }
         }
-        static public Dictionary<string,object> GetFormatedState(AddressStateModel addressStateModel)
+        static public Dictionary<string,object> GetFormatedAddressState(AddressStateModel addressStateModel)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             data["Id"] = addressStateModel.Id;

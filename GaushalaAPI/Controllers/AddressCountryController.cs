@@ -58,7 +58,7 @@ namespace GaushalaAPI.Controllers
             return addressCountryModelContext.GetAddressCountryList(addressCountryFilter);
         }
         [HttpPost]
-        public Dictionary<long, string> GetAddressCountryIDNamePair(AddressCountryFilter addressCountryFilter)
+        public Dictionary<string, string> GetAddressCountryIDNamePair(AddressCountryFilter addressCountryFilter)
         {
             return addressCountryModelContext.GetAddressCountryIdNamePair(addressCountryFilter);
         }
