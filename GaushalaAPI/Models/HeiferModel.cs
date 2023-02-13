@@ -169,5 +169,74 @@ namespace GaushalaAPI.Models
             };
             return error;
         }
+        public static Dictionary<string, object> GetFormatedHeiferData(HeiferModel? heifer_)
+        {
+            if (heifer_ != null)
+            {
+                Dictionary<string, object> cow = new Dictionary<string, object>();
+                cow["id"] = heifer_.Id;
+                cow["tagNo"] = heifer_.TagNo;
+                cow["name"] = heifer_.Name;
+                if (heifer_.DOB != null)
+                {
+                    cow["dob"] = ((DateTime)heifer_.DOB).ToString("yyyy-MM-dd HH:mm:ss");// "2004-12-01T00:00:00",
+                }
+                else
+                {
+                    cow["dob"] = heifer_.DOB.ToString();
+                }
+                cow["category"] = heifer_.Category;
+                cow["gender"] = heifer_.Gender;
+                cow["breed"] = heifer_.Breed_;
+                cow["colour"] = heifer_.Colour;
+                cow["colour_"] = heifer_.Colour_;
+                cow["sireID"] = heifer_.SireID;
+                cow["damID"] = heifer_.DamID;
+                cow["sireNo"] = heifer_.SireNo;
+                cow["sireName"] = heifer_.SireName;
+                cow["damNo"] = heifer_.DamNo;
+                cow["damName"] = heifer_.DamName;
+                cow["dbly"] = heifer_.DBLY;
+                cow["sdbly"] = heifer_.SDBLY;
+                cow["butterFat"] = heifer_.ButterFat;
+                cow["pregnancyStatus"] = heifer_.PregnancyStatus;
+                cow["status"] = heifer_.Status;
+                cow["reproductiveStatus"] = heifer_.ReproductiveStatus;
+                cow["milkingStatus"] = heifer_.MilkingStatus;
+                cow["remarks"] = heifer_.Remarks;
+                cow["additionalInfo"] = heifer_.AdditionalInfo;
+                if (heifer_.Picture != null && heifer_.Picture.Trim() != "")
+                {
+                    cow["picture"] = heifer_.Picture;
+                }
+                else
+                {
+                    cow["picture"] = heifer_.DefaultPicture;
+                }
+
+                cow["lactation"] = heifer_.Lactation;
+                cow["type"] = heifer_.Type;
+                cow["weight"] = heifer_.Weight;
+                cow["height"] = heifer_.Height;
+                cow["semenDoses"] = heifer_.SemenDoses;
+                cow["noOfTeatsWorking"] = heifer_.NoOfTeatsWorking;
+                cow["location"] = heifer_.Location;
+                cow["sold"] = heifer_.Sold;
+                Dictionary<string, object> data = new Dictionary<string, object>();
+                data["success"] = true;
+                data["data"] = cow;
+                data["message"] = "Cow Found";
+                return data;
+            }
+            else
+            {
+                Dictionary<string, object> data = new Dictionary<string, object>();
+                data["success"] = false;
+                data["message"] = "Cow Not Found";
+
+                return data;
+            }
+
+        }
     }
 }

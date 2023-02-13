@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Collections;
 using GaushalAPI.Entities;
+using GaushalaAPI.Entities;
 
 namespace GaushalaAPI.Controllers
 {
@@ -157,7 +158,7 @@ namespace GaushalaAPI.Controllers
             return bullsContext.EditSellBull(salePurchaseAnimal,buyerSellerModal);
         }
         [HttpPost]
-        public Dictionary<string, object> GetDataForBullProfilePageAPI()
+        public Dictionary<string, object> GetDataForBullProfilePage()
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             //breeds
@@ -174,19 +175,16 @@ namespace GaushalaAPI.Controllers
             animalColorsFilter.RecordsPerPage = 50;
             Dictionary<long, string> colors = animalColorsContext.GetAnimalColorsIdNamePair(animalColorsFilter);
             data["colors"] = colors;
-            //performance
+            StaticData staticData = new StaticData();
+            //BullLocation
+            data["animalLocations"] = staticData.GetAnimalLocationsOptions();
+            
             Dictionary<string, string> performance = new Dictionary<string, string>();
             performance["SEMEN"] = "Artificial Intelligence";
             performance["NATURAL"] = "Natural";
             data["performance"] = performance;
-            //BullLocation
-            Dictionary<long, string> animalLocation = new Dictionary<long, string>();
-            animalLocation[1] = "Shed A";
-            animalLocation[2] = "Shed B";
-            animalLocation[3] = "Shed C";
-            animalLocation[4] = "Shed D";
-            animalLocation[5] = "Shed E";
-            data["animalLocations"] = animalLocation;
+            
+            
             return data;
         }
     }

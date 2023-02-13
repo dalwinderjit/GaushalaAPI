@@ -1137,8 +1137,10 @@ namespace GaushalaAPI.DBContext
                     {
                         Dictionary<string, string> cowData = cow_context.GetCowTagNoNameById(Convert.ToInt64(sqlrdr["DamID"]));
                         Dictionary<string, string> bullData = cow_context.GetCowTagNoNameById(Convert.ToInt64(sqlrdr["SireID"]));
-                        string cowName = cowData["name"];
-                        string TagNo = cowData["tagNo"];
+                        string damName = cowData["name"];
+                        string damTagNo = cowData["tagNo"];
+                        string sireName = bullData["name"];
+                        string sireTagNo = bullData["tagNo"];
                         if (fetchConceiveData == true)
                         {
                             HeiferDetail["conceiveId"] = Helper.IsNullOrEmpty(sqlrdr["conceiveId"]);
@@ -1161,7 +1163,7 @@ namespace GaushalaAPI.DBContext
                         HeiferDetail["bullsName"] = Helper.IsNullOrEmpty(bullData["name"]);
                         HeiferDetail["bullsTagNo"] = Helper.IsNullOrEmpty(bullData["tagNo"]);
                         HeiferDetail["birthLactationNumber"] = Helper.IsNullOrEmpty(sqlrdr["BirthLactationNumber"]);
-                        HeiferDetail["DOB"] = Helper.IsNullOrEmpty(sqlrdr["DOB"]);
+                        HeiferDetail["dob"] = Helper.FormatDate3(sqlrdr["DOB"]);
                         HeiferDetail["tagNo"] = Helper.IsNullOrEmpty(sqlrdr["TagNo"]);
                         HeiferDetail["name"] = Helper.IsNullOrEmpty(sqlrdr["Name"]);
                         HeiferDetail["colour"] = Helper.IsNullOrEmpty(sqlrdr["Colour"]);
@@ -1170,7 +1172,13 @@ namespace GaushalaAPI.DBContext
                         HeiferDetail["remarks"] = Helper.IsNullOrEmpty(sqlrdr["Remarks"]);
                         HeiferDetail["picture"] = Helper.IsNullOrEmpty(sqlrdr["Picture"]);
                         HeiferDetail["location"] = Helper.IsNullOrEmpty(sqlrdr["Location"]);
-                        data["status"] = "success";
+                        HeiferDetail["weight"] = Helper.IsNullOrEmpty(sqlrdr["Weight"]);
+                        HeiferDetail["height"] = Helper.IsNullOrEmpty(sqlrdr["Height"]);
+                        HeiferDetail["damNo"] = damTagNo;
+                        HeiferDetail["damName"] = damName;
+                        HeiferDetail["sireName"] = sireName;
+                        HeiferDetail["sireNo"] = sireTagNo;
+                        data["status"] = true;
                         data["data"] = HeiferDetail;
                         data["message"] = "Heifer Detail Exists";
                         if (HeiferDetail["doctorID"].ToString().Trim() != "")
@@ -1200,7 +1208,7 @@ namespace GaushalaAPI.DBContext
                 }
                 catch (Exception ex)
                 {
-                    data["status"] = "failure";
+                    data["status"] = false;
                     data["message"] = "Heifer Detail Do not Exists" + ex.StackTrace;
                     return data;
                 }

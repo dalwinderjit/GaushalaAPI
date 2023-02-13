@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Collections;
 using GaushalAPI.Entities;
+using GaushalaAPI.Entities;
 
 namespace GaushalaAPI.Controllers
 {
@@ -248,7 +249,7 @@ namespace GaushalaAPI.Controllers
             return cowContext.EditSellCow(salePurchaseAnimal,buyerSellerModal);
         }
         [HttpPost]
-        public Dictionary<string,object> GetDataForCowProfilePageAPI()
+        public Dictionary<string,object> GetDataForCowProfilePage()
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             //breeds
@@ -265,27 +266,21 @@ namespace GaushalaAPI.Controllers
             animalColorsFilter.RecordsPerPage = 50;
             Dictionary<long, string> colors = animalColorsContext.GetAnimalColorsIdNamePair(animalColorsFilter);
             data["colors"] = colors;
+            StaticData staticData = new StaticData();
             //pregnancyStatus
-            Dictionary<long, string> pregnancyStatus = new Dictionary<long, string>();
-            pregnancyStatus[0] = "Pregnant";
-            pregnancyStatus[1] = "Not Pregnant";
-            data["pregnancyStatus"] = pregnancyStatus;
+            data["pregnancyStatus"] = staticData.GetPregnancyStatusOptions();
+            //pregnancyStatus 2 for conceive data
+            data["pregnancyStatus2"] = staticData.GetPregnancyStatus2Options();
+            //matingType
+            data["matingType"] = staticData.GetMatingTypeOptions();
+            //deliveryType
+            data["deliveryType"] = staticData.GetDeliveryTypeOptions();
+            //gender
+            data["Gender"] = staticData.GetGendersOptions();
             //TeatsWorking
-            Dictionary<long, string> teatsWorking = new Dictionary<long, string>();
-            teatsWorking[0] = "0 Teats Working";
-            teatsWorking[1] = "1 Teats Working";
-            teatsWorking[2] = "2 Teats Working";
-            teatsWorking[3] = "3 Teats Working";
-            teatsWorking[4] = "4 Teats Working";
-            data["teatsWorking"] = teatsWorking;
+            data["teatsWorking"] = staticData.GetTeatsWorkingOptions();
             //CowLocation
-            Dictionary<long, string> animalLocation = new Dictionary<long, string>();
-            animalLocation[1] = "Shed A";
-            animalLocation[2] = "Shed B";
-            animalLocation[3] = "Shed C";
-            animalLocation[4] = "Shed D";
-            animalLocation[5] = "Shed E";
-            data["animalLocations"] = animalLocation;
+            data["animalLocations"] = staticData.GetAnimalLocationsOptions();
             return data;
         }
     }

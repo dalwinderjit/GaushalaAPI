@@ -96,6 +96,18 @@ namespace GaushalaAPI.Models
                 return "";
             }
         }
-        
+
+        internal static string GetValidateOrderClause(string order)
+        {
+            string[] orders = new string[] { "ASC", "DESC" };
+            string order_ = "ASC";
+            for (int i = 0; i < orders.Length; i++)
+            {
+                if (orders[i] == order.ToUpper()) {
+                    order_ = orders[i];
+                }
+            }
+            return order_;
+        }
     }
 }
