@@ -283,5 +283,15 @@ namespace GaushalaAPI.Controllers
             data["animalLocations"] = staticData.GetAnimalLocationsOptions();
             return data;
         }
+        [HttpGet]
+        public Dictionary<string, object> Test()
+        {
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            Dictionary<int, string> colors = cowContext.getColors();
+            Dictionary<int, string> breeds = cowContext.getBreeds();
+            data["colors"] = colors;
+            data["breeds"] = breeds;
+            return data;
+        }
     }
 }

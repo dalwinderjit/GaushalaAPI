@@ -1045,7 +1045,7 @@ namespace GaushalaAPI.DBContext
                     conn.Open();
                     SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
                     int i = 0;
-                    
+                    //colors[21] = "In side TRY";
                     while (sqlrdr.Read())
                     {
                        
@@ -1062,6 +1062,8 @@ namespace GaushalaAPI.DBContext
                 }
                 catch (Exception ex)
                 {
+                    colors[1] = ex.Message;
+                    colors[2] = ex.StackTrace;
                     return colors;
                 }
             }

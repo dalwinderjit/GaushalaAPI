@@ -37,9 +37,12 @@ namespace GaushalaAPI.DBContext
             UserLoginResponse loginResponse = new UserLoginResponse();
             loginResponse.errors = new Dictionary<string, string>();
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+            Console.WriteLine(connectionString);
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                SqlCommand sqlcmd = new SqlCommand("Select  * from Users where UserName = @Username", conn);
+                string query = "Select  * from Users where UserName = @Username";
+                Console.WriteLine(query);
+                SqlCommand sqlcmd = new SqlCommand(query, conn);
                 try
                 {
                     conn.Open();
@@ -84,7 +87,7 @@ namespace GaushalaAPI.DBContext
                     else
                     {
                         loginResponse.IsSuccess = false;
-                        loginResponse.errors["error"] = "Login Failed! Invalid Username Password";
+                        loginResponse.errors["error"] = "Login Failed! Invalid Username Password user not found";
                     }
                     sqlrdr.Close();
                     conn.Close();
@@ -93,7 +96,9 @@ namespace GaushalaAPI.DBContext
                 catch (Exception ex)
                 {
                     loginResponse.IsSuccess = false;
-                    loginResponse.errors["password"] = "Login Failed";
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.StackTrace);
+                    loginResponse.errors["password"] = "Login Failed Exception";
                     return loginResponse;
                 }
             }
