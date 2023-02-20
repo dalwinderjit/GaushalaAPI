@@ -132,7 +132,15 @@ namespace GaushalaAPI.DBContext
         internal Dictionary<string, object> EditMedicationDetail(AnimalMedicationModel medication)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
-
+            if (medication.AnimalIDs == null)
+            {
+                medication.AnimalIDs = new List<long>();
+                medication.AnimalIDs.Add((long)medication.AnimalID);
+            }
+            else if (medication.AnimalIDs.Count == 0)
+            {
+                medication.AnimalIDs.Add((long)medication.AnimalID);
+            }
             if (medication.ValidateMedication("Edit") == true)
             {
                 /*string query = "UPdate Medication set Date = @Date,AnimalID = @AnimalID,Disease = @Disease,Symptoms = @Symptoms,Diagnosis = @Diagnosis," +
@@ -165,6 +173,7 @@ namespace GaushalaAPI.DBContext
                         tran.Save("save1");
                         sqlcmd.Transaction = tran;
                         int i = sqlcmd.ExecuteNonQuery();
+                        
                         Dictionary<string, object> mediDocData = this.UpdateMedicationDoctors(medication.Id, medication.DoctorIDs,conn,tran);
                         Dictionary<string, object> mediAniData = this.UpdateMedicationAnimalIDs(medication.Id, medication.AnimalIDs,conn,tran);
                         Dictionary<string, string> mediDocData_ = (Dictionary<string, string>)mediDocData["data"];
@@ -1091,7 +1100,8 @@ namespace GaushalaAPI.DBContext
                         }
                         medication["AnimalID"] = sqlrdr["AnimalID"];
                         medication["AnimalNo"] = animalDetail["tagNo"]+" / "+ animalDetail["name"];
-                        medication["Disease"] = sqlrdr["Disease"];
+                        medication["Disease"] = Helper.IsNullOrEmpty(sqlrdr["Disease"]);
+                        medication["DiseaseID"] = Helper.IsNullOrEmpty(sqlrdr["DiseaseID"]);
                         medication["Symptoms"] = sqlrdr["Symptoms"];
                         medication["Diagnosis"] = sqlrdr["Diagnosis"];
                         medication["Treatment"] = sqlrdr["Treatment"];

@@ -364,6 +364,12 @@ namespace GaushalaAPI.DBContext
                 string orderBy = "";
                 if (diseaseFilter.OrderBy != null && diseaseFilter.OrderBy != "" && diseaseFilter.Order != null && diseaseFilter.Order != "")
                 {
+                    diseaseFilter.Order = Helper.GetValidateOrderClause(diseaseFilter.Order);
+                    orderBy += $" order by Case @OrderBy When 'ID' then CAST([ID] as varchar(256)) When 'DiseaseName' then DiseaseName when 'Description' then cast(Description as varchar(256)) else cast(ID as varchar(256))  END {diseaseFilter.Order} ";
+                    //orderBy += $" order by ID ASC ";
+                }
+                else
+                {
                     orderBy += $" order by ID ASC ";
                 }
                 string offset = "";
@@ -394,19 +400,19 @@ namespace GaushalaAPI.DBContext
                 if (diseaseFilter.DiseaseName != null && diseaseFilter.DiseaseName != "")
                 {
                     sqlcmd.Parameters.Add("@DiseaseName", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@DiseaseName"].Value = diseaseFilter.DiseaseName;
+                    sqlcmd.Parameters["@DiseaseName"].Value = "%"+diseaseFilter.DiseaseName+"%";
                 }
                 if (diseaseFilter.Description != null && diseaseFilter.Description != "")
                 {
                     sqlcmd.Parameters.Add("@Description", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Description"].Value = diseaseFilter.Description;
+                    sqlcmd.Parameters["@Description"].Value = "%" + diseaseFilter.Description+ "%" ;
                 }
                 if (diseaseFilter.OrderBy != null && diseaseFilter.OrderBy != "" && diseaseFilter.Order != null && diseaseFilter.Order != "")
                 {
                     sqlcmd.Parameters.Add("@OrderBy", System.Data.SqlDbType.VarChar);
                     sqlcmd.Parameters["@OrderBy"].Value = diseaseFilter.OrderBy;
-                    sqlcmd.Parameters.Add("@Order", System.Data.SqlDbType.VarChar);
-                    sqlcmd.Parameters["@Order"].Value = diseaseFilter.Order;
+                    //sqlcmd.Parameters.Add("@Order", System.Data.SqlDbType.VarChar);
+                    //sqlcmd.Parameters["@Order"].Value = diseaseFilter.Order;
                 }
                 if (diseaseFilter.PageNo != null && diseaseFilter.RecordsPerPage != null)
                 {

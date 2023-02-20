@@ -22,13 +22,13 @@ namespace GaushalaAPI.Models
         public Dictionary<string, string> errors { get; set; }
         public AddressDistrictModel()
         {
-
+            errors = new Dictionary<string, string>();
         }
         public AddressDistrictModel(IConfiguration configuration)
         {
-
+            errors = new Dictionary<string, string>();
         }
-        public bool ValidateAnimalDistricts(string type = "Add") {
+        public bool ValidateAddressDistrict(string type = "Add") {
             bool error = true;
             if (type == "Edit")
             {
@@ -48,35 +48,37 @@ namespace GaushalaAPI.Models
                 errors.Add("StateID", "Please select the State");
                 error = false;
             }
-            if (this.Created == null)
-            {
-                errors.Add("Created", "Please enter the Created Datetime");
-                error = false;
+            if (type == "Add") { 
+                if (this.Created == null)
+                {
+                    errors.Add("Created", "Please enter the Created Datetime");
+                    error = false;
+                }
             }
             return error;
         }
         public AddressDistrictModel(SqlDataReader sqlrdr) {
             Id = Convert.ToInt32(sqlrdr["Id"]);
             if (!Validations.IsNullOrEmpty(sqlrdr["District"])) { 
-                District = sqlrdr["Description"].ToString();
+                District = sqlrdr["District"].ToString();
             }
             if (!Validations.IsNullOrEmpty(sqlrdr["StateID"])) {
                 StateID = Convert.ToInt64(sqlrdr["StateID"]);
             }
             if (!Validations.IsNullOrEmpty(sqlrdr["Deleted"]))
             {
-                Deleted = Convert.ToBoolean(sqlrdr["Name"]);
+                Deleted = Convert.ToBoolean(sqlrdr["Deleted"]);
             }
             if (!Validations.IsNullOrEmpty(sqlrdr["Created"]))
             {
-                Created = (DateTime)sqlrdr["Crearted"];
+                Created = (DateTime)sqlrdr["Created"];
             }
             if (!Validations.IsNullOrEmpty(sqlrdr["Updated"]))
             {
                 Updated = (DateTime)sqlrdr["Updated"];
             }
         }
-        static public Dictionary<string,object> GetFormatedDistrict(AddressDistrictModel addressDistrictModel)
+        static public Dictionary<string,object> GetFormatedAddressDistrict(AddressDistrictModel addressDistrictModel)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             data["Id"] = addressDistrictModel.Id;

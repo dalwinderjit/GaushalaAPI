@@ -28,7 +28,7 @@ namespace GaushalaAPI.Models
         {
 
         }
-        public bool ValidateAnimalTehsils(string type = "Add") {
+        public bool ValidateAddressTehsil(string type = "Add") {
             bool error = true;
             if (type == "Edit")
             {
@@ -45,31 +45,33 @@ namespace GaushalaAPI.Models
             }
             if (this.DistrictID == null)
             {
-                errors.Add("DistrictID", "Please select the State");
+                errors.Add("DistrictID", "Please select the District");
                 error = false;
             }
-            if (this.Created == null)
-            {
-                errors.Add("Created", "Please enter the Created Datetime");
-                error = false;
+            if (type == "Add") { 
+                if (this.Created == null)
+                {
+                    errors.Add("Created", "Please enter the Created Datetime");
+                    error = false;
+                }
             }
             return error;
         }
         public AddressTehsilModel(SqlDataReader sqlrdr) {
             Id = Convert.ToInt32(sqlrdr["Id"]);
             if (!Validations.IsNullOrEmpty(sqlrdr["Tehsil"])) { 
-                Tehsil = sqlrdr["Description"].ToString();
+                Tehsil = sqlrdr["Tehsil"].ToString();
             }
             if (!Validations.IsNullOrEmpty(sqlrdr["DistrictID"])) {
                 DistrictID = Convert.ToInt64(sqlrdr["DistrictID"]);
             }
             if (!Validations.IsNullOrEmpty(sqlrdr["Deleted"]))
             {
-                Deleted = Convert.ToBoolean(sqlrdr["Name"]);
+                Deleted = Convert.ToBoolean(sqlrdr["Deleted"]);
             }
             if (!Validations.IsNullOrEmpty(sqlrdr["Created"]))
             {
-                Created = (DateTime)sqlrdr["Crearted"];
+                Created = (DateTime)sqlrdr["Created"];
             }
             if (!Validations.IsNullOrEmpty(sqlrdr["Updated"]))
             {
