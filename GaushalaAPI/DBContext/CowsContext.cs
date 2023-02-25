@@ -583,12 +583,14 @@ namespace GaushalaAPI.DBContext
                                 data_["status"] = "success";
                                 if (milking == true)
                                 {
+                                    
                                     data_["message"] = "Cow is Set to Milking";
                                 }
                                 else
                                 {
                                     data_["message"] = "Cow is Off From Milking " + i;
                                 }
+                                data_["milkingStatus"] = milking;
                             }
                             else
                             {
@@ -605,8 +607,6 @@ namespace GaushalaAPI.DBContext
                             data_["message"] = "Failed To Update Milking " ;
                             data_["errors"] = errors;
                         }
-
-
                     }
                 }
                 return data_;

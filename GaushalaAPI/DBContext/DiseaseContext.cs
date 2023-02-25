@@ -443,6 +443,50 @@ namespace GaushalaAPI.DBContext
                 }
             }
         }
+        internal static Dictionary<long, string> GetDiseasesByIds(IConfiguration _configuration, List<long> Ids)
+        {
+            List<Dictionary<string, object>> DiseaseList_ = new List<Dictionary<string, object>>();
+            Dictionary<long, string> Diseases = new Dictionary<long, string>();
+            string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                Console.WriteLine("HIE");
+                string where = "";
+                if (Ids != null && Ids.Count > 0)
+                {
+                    if (where != "") { where += " and "; }
+                    where += $" Id in ({String.Join(',', Ids)})";
+                }
+                string cols = "Id,DiseaseName";
+                
+                if (where != "")
+                {
+                    where = " where " + where;
+                }
+                string query = $"Select {cols} from AnimalDiseases {where}";
+                Console.WriteLine(query);
+                SqlCommand sqlcmd = new SqlCommand(query, conn);
+                try
+                {
+                    conn.Open();
+                    SqlDataReader sqlrdr = sqlcmd.ExecuteReader();
+                    while (sqlrdr.Read())
+                    {
+                        Diseases[Convert.ToInt64(sqlrdr["Id"])] = sqlrdr["DiseaseName"].ToString();
+
+                    }
+                    sqlrdr.Close();
+                    conn.Close();
+                    return Diseases;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    Console.WriteLine(ex.StackTrace);
+                    return Diseases;
+                }
+            }
+        }
 
 
     }

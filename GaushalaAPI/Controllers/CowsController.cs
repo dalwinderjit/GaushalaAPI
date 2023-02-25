@@ -254,6 +254,9 @@ namespace GaushalaAPI.Controllers
             Dictionary<string, object> data = new Dictionary<string, object>();
             //breeds
             AnimalBreedsContext animalBreedsContext = new AnimalBreedsContext(_configuration);
+            AddressCountryContext addressCountryContext = new AddressCountryContext(_configuration);
+            AddressCountryFilter addressCountryFilter = new AddressCountryFilter();
+            
             AnimalBreedsFilter animalBreedsFilter = new AnimalBreedsFilter();
             animalBreedsFilter.PageNo = 1;
             animalBreedsFilter.RecordsPerPage = 50;
@@ -281,6 +284,7 @@ namespace GaushalaAPI.Controllers
             data["teatsWorking"] = staticData.GetTeatsWorkingOptions();
             //CowLocation
             data["animalLocations"] = staticData.GetAnimalLocationsOptions();
+            data["countries"] = addressCountryContext.GetAddressCountryIdNamePair(addressCountryFilter);
             return data;
         }
         [HttpGet]

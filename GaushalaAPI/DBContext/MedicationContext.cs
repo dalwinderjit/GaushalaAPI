@@ -1063,6 +1063,7 @@ namespace GaushalaAPI.DBContext
             Dictionary<string, object> data = new Dictionary<string, object>();
             ArrayList ar = new ArrayList();
             List<long> med_ids = new List<long>();
+            List<long> disease_ids = new List<long>();
             int offset = 0;
             if(page>1){
                 offset = ((page -1) *limit);
@@ -1102,6 +1103,9 @@ namespace GaushalaAPI.DBContext
                         medication["AnimalNo"] = animalDetail["tagNo"]+" / "+ animalDetail["name"];
                         medication["Disease"] = Helper.IsNullOrEmpty(sqlrdr["Disease"]);
                         medication["DiseaseID"] = Helper.IsNullOrEmpty(sqlrdr["DiseaseID"]);
+                        if (Validations.IsNullOrEmpty(sqlrdr["DiseaseID"]) == false && !disease_ids.Contains(Convert.ToInt64(sqlrdr["DiseaseID"]))) {
+                            disease_ids.Add(Convert.ToInt64(sqlrdr["DiseaseID"]));
+                        }
                         medication["Symptoms"] = sqlrdr["Symptoms"];
                         medication["Diagnosis"] = sqlrdr["Diagnosis"];
                         medication["Treatment"] = sqlrdr["Treatment"];
@@ -1118,6 +1122,16 @@ namespace GaushalaAPI.DBContext
                     sqlrdr.Close();
                     conn.Close();
                     Console.WriteLine("COnnection closed");
+                    Dictionary<long, string> diseases_pair;
+                    if (disease_ids.Count > 0)
+                    {
+                        Console.WriteLine("Diseases gretor than zero" + disease_ids.Count);
+                        diseases_pair =  DiseaseContext.GetDiseasesByIds(_configuration, disease_ids);
+                    }
+                    else
+                    {
+                        diseases_pair = new Dictionary<long, string>();
+                    }
                     if(med_ids.Count>0){
                         Dictionary<long, object> medication_data = MedicationContext.GetDoctorIdsByMedicationIDs2(this._configuration,med_ids);
                         List<long> Doc_Ids = new List<long>();
@@ -1189,6 +1203,9 @@ namespace GaushalaAPI.DBContext
                                 catch(Exception e)
                                 {
                                     Console.WriteLine("Doc ids not found");
+                                }
+                                if (m["DiseaseID"] != null && m["DiseaseID"].ToString() != "" && diseases_pair.ContainsKey(Convert.ToInt64(m["DiseaseID"]))) {
+                                    m["Disease"] = diseases_pair[Convert.ToInt64(m["DiseaseID"])];
                                 }
                             }
                         }
