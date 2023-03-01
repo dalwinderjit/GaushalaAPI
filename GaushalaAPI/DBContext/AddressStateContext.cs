@@ -106,7 +106,7 @@ namespace GaushalaAPI.DBContext
                 if (addressStateModelFilter.CountryID != null && addressStateModelFilter.CountryID.ToString() != "")
                 {
                     if (where != "") { where += " and "; }
-                    where += $" CountryID  like @CountryID  ";
+                    where += $" CountryID  =  @CountryID  ";
                 }
                 if (addressStateModelFilter.Deleted != null && addressStateModelFilter.Deleted != "")
                 {
@@ -200,6 +200,7 @@ namespace GaushalaAPI.DBContext
                         {
                             breeds["Id"] = sqlrdr["Id"];
                             breeds["State"] = sqlrdr["State"].ToString();
+                            breeds["CountryID"] = sqlrdr["CountryID"].ToString();
                             breeds["Created"] = Helper.FormatDate(sqlrdr["Created"]);
                             breeds["Updated"] = Helper.FormatDate(sqlrdr["Updated"]);
                             breeds["Deleted"] = Helper.IsNullOrEmpty(sqlrdr["Deleted"]);
@@ -360,6 +361,11 @@ namespace GaushalaAPI.DBContext
                     if (where != "") { where += " and "; }
                     where += $" State like @State ";
                 }
+                if (addressStateModelFilter.CountryID != null)
+                {
+                    if (where != "") { where += " and "; }
+                    where += $" CountryID = @CountryID ";
+                }
                 if (addressStateModelFilter.Deleted != null && addressStateModelFilter.Deleted != "")
                 {
                     if (where != "") { where += " and "; }
@@ -404,6 +410,11 @@ namespace GaushalaAPI.DBContext
                 {
                     sqlcmd.Parameters.Add("@State", System.Data.SqlDbType.VarChar);
                     sqlcmd.Parameters["@State"].Value = "%"+addressStateModelFilter.State+"%";
+                }
+                if (addressStateModelFilter.CountryID != null)
+                {
+                    sqlcmd.Parameters.Add("@CountryID", System.Data.SqlDbType.BigInt);
+                    sqlcmd.Parameters["@CountryID"].Value =  addressStateModelFilter.CountryID;
                 }
                 if (addressStateModelFilter.Deleted != null && addressStateModelFilter.Deleted!= "")
                 {

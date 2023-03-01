@@ -106,7 +106,7 @@ namespace GaushalaAPI.DBContext
                 if (addressDistrictModelFilter.StateID != null && addressDistrictModelFilter.StateID.ToString() != "")
                 {
                     if (where != "") { where += " and "; }
-                    where += $" StateID  like @StateID  ";
+                    where += $" StateID  =  @StateID  ";
                 }
                 if (addressDistrictModelFilter.Deleted != null && addressDistrictModelFilter.Deleted != "")
                 {
@@ -361,6 +361,11 @@ namespace GaushalaAPI.DBContext
                     if (where != "") { where += " and "; }
                     where += $" District like @District ";
                 }
+                if (addressDistrictModelFilter.StateID != null )
+                {
+                    if (where != "") { where += " and "; }
+                    where += $" StateID = @StateID ";
+                }
                 if (addressDistrictModelFilter.Deleted != null && addressDistrictModelFilter.Deleted != "")
                 {
                     if (where != "") { where += " and "; }
@@ -405,6 +410,11 @@ namespace GaushalaAPI.DBContext
                 {
                     sqlcmd.Parameters.Add("@District", System.Data.SqlDbType.VarChar);
                     sqlcmd.Parameters["@District"].Value = "%"+addressDistrictModelFilter.District+"%";
+                }
+                if (addressDistrictModelFilter.StateID != null)
+                {
+                    sqlcmd.Parameters.Add("@StateID", System.Data.SqlDbType.BigInt);
+                    sqlcmd.Parameters["@StateID"].Value = addressDistrictModelFilter.StateID;
                 }
                 if (addressDistrictModelFilter.Deleted != null && addressDistrictModelFilter.Deleted!= "")
                 {

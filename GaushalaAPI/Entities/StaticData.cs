@@ -66,6 +66,7 @@ namespace GaushalaAPI.Entities
         {
             return this.MilkStatusOptions;
         }
+        
         public StaticData(){
             PregnancyStatus = new Dictionary<long, string>();
             PregnancyStatus[0] = "Pregnant";

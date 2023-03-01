@@ -268,6 +268,7 @@ namespace GaushalaAPI.Controllers
             animalColorsFilter.PageNo = 1;
             animalColorsFilter.RecordsPerPage = 50;
             Dictionary<long, string> colors = animalColorsContext.GetAnimalColorsIdNamePair(animalColorsFilter);
+            //colors
             data["colors"] = colors;
             StaticData staticData = new StaticData();
             //pregnancyStatus
@@ -282,8 +283,13 @@ namespace GaushalaAPI.Controllers
             data["Gender"] = staticData.GetGendersOptions();
             //TeatsWorking
             data["teatsWorking"] = staticData.GetTeatsWorkingOptions();
+            //milk status
+            data["milkStatus"] = staticData.GetMilkStatusOptions();
+            //birth status
+            data["birthStatus"] = staticData.GetBirthStatusOptions();
             //CowLocation
             data["animalLocations"] = staticData.GetAnimalLocationsOptions();
+            //countries
             data["countries"] = addressCountryContext.GetAddressCountryIdNamePair(addressCountryFilter);
             return data;
         }

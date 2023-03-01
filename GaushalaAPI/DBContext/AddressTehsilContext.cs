@@ -106,7 +106,7 @@ namespace GaushalaAPI.DBContext
                 if (addressTehsilModelFilter.DistrictID != null && addressTehsilModelFilter.DistrictID.ToString() != "")
                 {
                     if (where != "") { where += " and "; }
-                    where += $" DistrictID  like @DistrictID  ";
+                    where += $" DistrictID  = @DistrictID  ";
                 }
                 if (addressTehsilModelFilter.Deleted != null && addressTehsilModelFilter.Deleted != "")
                 {
@@ -361,6 +361,11 @@ namespace GaushalaAPI.DBContext
                     if (where != "") { where += " and "; }
                     where += $" Tehsil like @Tehsil ";
                 }
+                if (addressTehsilModelFilter.DistrictID != null)
+                {
+                    if (where != "") { where += " and "; }
+                    where += $" DistrictID = @DistrictID ";
+                }
                 if (addressTehsilModelFilter.Deleted != null && addressTehsilModelFilter.Deleted != "")
                 {
                     if (where != "") { where += " and "; }
@@ -405,6 +410,11 @@ namespace GaushalaAPI.DBContext
                 {
                     sqlcmd.Parameters.Add("@Tehsil", System.Data.SqlDbType.VarChar);
                     sqlcmd.Parameters["@Tehsil"].Value = "%"+addressTehsilModelFilter.Tehsil+"%";
+                }
+                if (addressTehsilModelFilter.DistrictID != null )
+                {
+                    sqlcmd.Parameters.Add("@DistrictID", System.Data.SqlDbType.BigInt);
+                    sqlcmd.Parameters["@DistrictID"].Value = addressTehsilModelFilter.DistrictID ;
                 }
                 if (addressTehsilModelFilter.Deleted != null && addressTehsilModelFilter.Deleted!= "")
                 {
