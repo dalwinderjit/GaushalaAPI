@@ -145,5 +145,21 @@ namespace GaushalaAPI.Models
                 //Console.WriteLine("TagNo not found");
             }
         }
+        public Dictionary<string,object> GetFormatedSalePurchaseAnimal()
+        {
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            data["animalId"] = this.AnimalId;
+            data["animalNo"] = this.AnimalNo;
+            data["buyerSellerId"] = this.BuyerSellerId;
+            data["date"] = Helper.FormatDate3(this.Date);
+            data["errors"] = this.errors;
+            data["id"] = this.Id;
+            data["price"] = this.Price;
+            data["remarks"] = this.Remarks;
+            data["salePurchase"] = this.SalePurchase;
+            data["supervisorId"] = this.SupervisorId;
+            data["supervisorName"] = this.SupervisorName;
+            return data;
+        }
     }
 }

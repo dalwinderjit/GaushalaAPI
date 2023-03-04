@@ -19,6 +19,7 @@ namespace GaushalaAPI.Models
         public int? Country { get; set; }
         public int? State { get; set; }
         public int? District { get; set; }
+        public int? Tehsil { get; set; }
         public string? VillMohalla { get; set; }
         public string? StreetNo { get; set; }
         public string? HouseNo { get; set; }
@@ -67,6 +68,11 @@ namespace GaushalaAPI.Models
             if (this.District == null)
             {
                 errors.Add("District", "Please select the District");
+                error = false;
+            }
+            if (this.Tehsil == null)
+            {
+                errors.Add("Tehsil", "Please select the Tehsil");
                 error = false;
             }
             if (this.VillMohalla == null)
@@ -129,6 +135,13 @@ namespace GaushalaAPI.Models
             try
             {
                 District = Convert.ToInt32(sqlrdr["District"]);
+            }catch(Exception e)
+            {
+                //Console.WriteLine("TagNo not found");
+            }
+            try
+            {
+                Tehsil = Convert.ToInt32(sqlrdr["Tehsil"]);
             }catch(Exception e)
             {
                 //Console.WriteLine("TagNo not found");

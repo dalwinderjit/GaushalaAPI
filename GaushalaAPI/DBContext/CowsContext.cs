@@ -2004,8 +2004,8 @@ namespace GaushalaAPI.DBContext
                     if(salePurchaseAnimal.BuyerSellerId!=null){
                         
                     }else{
-                        query2 = "INSERT INTO [dbo].[BuyerSellerDetail] ([Name],[Country],[State],[District],[Vill_Mohalla],[StreetNo],[HouseNo],[PIN],[PhoneNumber],[Email]) OUTPUT INSERTED.Id "+
-                            "VALUES(@Name,@Country,@State,@District,@Vill_Mohalla,@StreetNo,@HouseNo,@PIN,@PhoneNumber,@Email) ";
+                        query2 = "INSERT INTO [dbo].[BuyerSellerDetail] ([Name],[Country],[State],[District],[Tehsil],[Vill_Mohalla],[StreetNo],[HouseNo],[PIN],[PhoneNumber],[Email]) OUTPUT INSERTED.Id "+
+                            "VALUES(@Name,@Country,@State,@District,@Tehsil,@Vill_Mohalla,@StreetNo,@HouseNo,@PIN,@PhoneNumber,@Email) ";
                         tran = conn.BeginTransaction("newSeller");
                         
                         tran.Save("save1");
@@ -2019,6 +2019,8 @@ namespace GaushalaAPI.DBContext
                         sqlcmd2.Parameters["@State"].Value = buyerSellerModal.State;
                         sqlcmd2.Parameters.Add("@District", System.Data.SqlDbType.SmallInt);
                         sqlcmd2.Parameters["@District"].Value = buyerSellerModal.District;
+                        sqlcmd2.Parameters.Add("@Tehsil", System.Data.SqlDbType.Int);
+                        sqlcmd2.Parameters["@Tehsil"].Value = buyerSellerModal.Tehsil;
                         sqlcmd2.Parameters.Add("@Vill_Mohalla", System.Data.SqlDbType.VarChar);
                         sqlcmd2.Parameters["@Vill_Mohalla"].Value = buyerSellerModal.VillMohalla;
                         sqlcmd2.Parameters.Add("@StreetNo", System.Data.SqlDbType.VarChar);
@@ -2160,7 +2162,7 @@ namespace GaushalaAPI.DBContext
                             UserModel user = userContext.GetUserById((long)salePurchaseAnimal.SupervisorId);
                             salePurchaseAnimal.SupervisorName = user.GetDesignatedName();
                         }
-                        data["salePurchaseAnimal"] = salePurchaseAnimal;
+                        data["salePurchaseAnimal"] = salePurchaseAnimal.GetFormatedSalePurchaseAnimal();
                         query = $"Select * from  BuyerSellerDetail where Id = @Id";
                         sqlcmd = new SqlCommand(query, conn);
                         sqlcmd.Parameters.Add("@Id", System.Data.SqlDbType.BigInt);
@@ -2195,7 +2197,6 @@ namespace GaushalaAPI.DBContext
             string connectionString = _configuration.GetConnectionString("GaushalaDatabaseConnectionString");
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                
                 string query = $"Select * from  AnimalSalePurchaseDetail where AnimalId = @AnimalId";
                 Console.Write(query);
                 SqlCommand sqlcmd = new SqlCommand(query, conn);
@@ -2213,7 +2214,7 @@ namespace GaushalaAPI.DBContext
                             UserModel user = userContext.GetUserById((long)salePurchaseAnimal.SupervisorId);
                             salePurchaseAnimal.SupervisorName = user.GetDesignatedName();
                         }
-                        data["salePurchaseAnimal"] = salePurchaseAnimal;
+                        data["salePurchaseAnimal"] = salePurchaseAnimal.GetFormatedSalePurchaseAnimal();
                         query = $"Select * from  BuyerSellerDetail where Id = @Id";
                         sqlcmd = new SqlCommand(query, conn);
                         sqlcmd.Parameters.Add("@Id", System.Data.SqlDbType.BigInt);
@@ -2280,7 +2281,7 @@ namespace GaushalaAPI.DBContext
                         if(salePurchaseAnimal.BuyerSellerId==null){
                             Console.WriteLine("NULL");
                         }else{
-                            query2 = "UPDATE [dbo].[BuyerSellerDetail]  SET [Name] = @Name,[Country] = @Country,[State] = @State,[District] = @District,[Vill_Mohalla] = @Vill_Mohalla,"+
+                            query2 = "UPDATE [dbo].[BuyerSellerDetail]  SET [Name] = @Name,[Country] = @Country,[State] = @State,[District] = @District,[Tehsil] = @Tehsil,[Vill_Mohalla] = @Vill_Mohalla,"+
                         "[StreetNo] = @StreetNo,[HouseNo] = @HouseNo,[PIN] = @PIN,[PhoneNumber] = @PhoneNumber,[Email] = @Email WHERE Id = @Id";
                             tran = conn.BeginTransaction("newSeller");
                             
@@ -2295,6 +2296,8 @@ namespace GaushalaAPI.DBContext
                             sqlcmd2.Parameters["@State"].Value = buyerSellerModal.State;
                             sqlcmd2.Parameters.Add("@District", System.Data.SqlDbType.SmallInt);
                             sqlcmd2.Parameters["@District"].Value = buyerSellerModal.District;
+                            sqlcmd2.Parameters.Add("@Tehsil", System.Data.SqlDbType.SmallInt);
+                            sqlcmd2.Parameters["@Tehsil"].Value = buyerSellerModal.Tehsil;
                             sqlcmd2.Parameters.Add("@Vill_Mohalla", System.Data.SqlDbType.VarChar);
                             sqlcmd2.Parameters["@Vill_Mohalla"].Value = buyerSellerModal.VillMohalla;
                             sqlcmd2.Parameters.Add("@StreetNo", System.Data.SqlDbType.VarChar);
