@@ -180,6 +180,13 @@ namespace GaushalaAPI.Models
             {
                 Console.WriteLine("Diagnosis not found");
             }
+            try { 
+                DiseaseID = Convert.ToInt32(sqlrdr["DiseaseID"]);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("DiseaseID not found");
+            }
             try
             {
                 Treatment = Convert.ToString(sqlrdr["Treatment"]);
@@ -241,6 +248,7 @@ namespace GaushalaAPI.Models
             data["date"] = Helper.FormatDate3(medication.Date);
             data["diagnosis"] = medication.Diagnosis.ToString();
             data["disease"] = medication.Disease.ToString();
+            data["diseaseID"] =Helper.IsNullOrEmpty(medication.DiseaseID);
             data["doctorDetail"] = medication.DoctorDetail.ToString();
             data["doctorIDs"] = medication.DoctorIDs;
             data["animalIDs"] = medication.AnimalIDs;

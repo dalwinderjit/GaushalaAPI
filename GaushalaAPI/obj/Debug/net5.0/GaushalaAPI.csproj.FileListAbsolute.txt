@@ -45,7 +45,6 @@ D:\dalwinder\projects\djjs-gaushala\soruce-code\mainCode\GaushalaAPI\GaushalaAPI
 D:\dalwinder\projects\djjs-gaushala\soruce-code\mainCode\GaushalaAPI\GaushalaAPI\bin\Debug\net5.0\GaushalaAPI.runtimeconfig.json
 D:\dalwinder\projects\djjs-gaushala\soruce-code\mainCode\GaushalaAPI\GaushalaAPI\bin\Debug\net5.0\GaushalaAPI.runtimeconfig.dev.json
 D:\dalwinder\projects\djjs-gaushala\soruce-code\mainCode\GaushalaAPI\GaushalaAPI\bin\Debug\net5.0\GaushalaAPI.dll
-D:\dalwinder\projects\djjs-gaushala\soruce-code\mainCode\GaushalaAPI\GaushalaAPI\bin\Debug\net5.0\ref\GaushalaAPI.dll
 D:\dalwinder\projects\djjs-gaushala\soruce-code\mainCode\GaushalaAPI\GaushalaAPI\bin\Debug\net5.0\GaushalaAPI.pdb
 D:\dalwinder\projects\djjs-gaushala\soruce-code\mainCode\GaushalaAPI\GaushalaAPI\bin\Debug\net5.0\BCrypt.Net-Next.dll
 D:\dalwinder\projects\djjs-gaushala\soruce-code\mainCode\GaushalaAPI\GaushalaAPI\bin\Debug\net5.0\Microsoft.IdentityModel.Abstractions.dll
@@ -118,3 +117,4 @@ F:\PROJECTS\djjs-gaushala\soruce-code\main\GaushalaAPI\GaushalaAPI\obj\Debug\net
 F:\PROJECTS\djjs-gaushala\soruce-code\main\GaushalaAPI\GaushalaAPI\obj\Debug\net5.0\ref\GaushalaAPI.dll
 F:\PROJECTS\djjs-gaushala\soruce-code\main\GaushalaAPI\GaushalaAPI\obj\Debug\net5.0\GaushalaAPI.pdb
 F:\PROJECTS\djjs-gaushala\soruce-code\main\GaushalaAPI\GaushalaAPI\obj\Debug\net5.0\GaushalaAPI.genruntimeconfig.cache
+D:\dalwinder\projects\djjs-gaushala\soruce-code\mainCode\GaushalaAPI\GaushalaAPI\obj\Debug\net5.0\refint\GaushalaAPI.dll
